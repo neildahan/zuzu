@@ -38,29 +38,39 @@ export default function ClientHome() {
   return (
     <div className="space-y-5">
       {/* Program info card */}
-      <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 text-white">
-        <span className="text-[10px] font-bold text-accent uppercase tracking-[0.15em]">{t('client.currentWeek')}</span>
-        <h2 className="text-[28px] font-black mt-1 leading-tight">{program.name}</h2>
-        {program.description && <p className="text-sm text-gray-500 mt-1">{program.description}</p>}
+      <div className="rounded-3xl overflow-hidden relative">
+        {/* Background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80')" }}
+        />
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-gray-900/70" />
 
-        <div className="flex gap-8 mt-5">
-          <div>
-            <span className="text-[32px] font-black leading-none">{program.weekCount}</span>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">{t('trainer.weeks')}</p>
+        <div className="relative z-10 p-6 text-white">
+          <span className="text-[10px] font-bold text-accent uppercase tracking-[0.15em]">{t('client.currentWeek')}</span>
+          <h2 className="text-[28px] font-black mt-1 leading-tight">{program.name}</h2>
+          {program.description && <p className="text-sm text-gray-300/60 mt-1">{program.description}</p>}
+
+          <div className="flex gap-8 mt-5">
+            <div>
+              <span className="text-[32px] font-black leading-none">{program.weekCount}</span>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">{t('trainer.weeks')}</p>
+            </div>
+            <div>
+              <span className="text-[32px] font-black leading-none">{workouts?.length || 0}</span>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">{t('nav.workouts')}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-[32px] font-black leading-none">{workouts?.length || 0}</span>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">{t('nav.workouts')}</p>
-          </div>
+
+          <Link
+            to={`/client/${user._id}/workouts`}
+            className="flex items-center justify-center gap-2 w-full mt-6 p-4 rounded-2xl bg-accent font-bold shadow-lg shadow-accent/30 active:scale-[0.98] transition-transform"
+          >
+            {t('client.startWorkout')}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </Link>
         </div>
-
-        <Link
-          to={`/client/${user._id}/workouts`}
-          className="flex items-center justify-center gap-2 w-full mt-6 p-4 rounded-2xl bg-accent font-bold shadow-lg shadow-accent/30 active:scale-[0.98] transition-transform"
-        >
-          {t('client.startWorkout')}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-        </Link>
       </div>
 
       {/* Workouts section */}

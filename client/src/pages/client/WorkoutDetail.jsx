@@ -47,37 +47,45 @@ export default function WorkoutDetail() {
   return (
     <div className="space-y-6">
       {/* Hero header */}
-      <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[workout.type] || 'bg-white/10 text-gray-400'}`}>
-            {workout.type}
-          </span>
-        </div>
-        <h2 className="text-3xl font-extrabold">{workout.name}</h2>
+      <div className="rounded-3xl overflow-hidden relative">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-gray-900/60" />
 
-        {/* Stats row */}
-        <div className="flex gap-8 mt-5">
-          <div>
-            <span className="text-3xl font-extrabold">{exercises?.length || 0}</span>
-            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.exercises')}</p>
+        <div className="relative z-10 p-6 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[workout.type] || 'bg-white/10 text-gray-400'}`}>
+              {workout.type}
+            </span>
           </div>
-          <div>
-            <span className="text-3xl font-extrabold">{totalSets}</span>
-            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.sets')}</p>
-          </div>
-        </div>
+          <h2 className="text-3xl font-extrabold">{workout.name}</h2>
 
-        {/* Action buttons */}
-        <div className="flex gap-3 mt-6">
-          {exercises?.length > 0 && (
-            <Link
-              to={`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`}
-              className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
-            >
-              {t('client.startWorkout')}
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </Link>
-          )}
+          {/* Stats row */}
+          <div className="flex gap-8 mt-5">
+            <div>
+              <span className="text-3xl font-extrabold">{exercises?.length || 0}</span>
+              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.exercises')}</p>
+            </div>
+            <div>
+              <span className="text-3xl font-extrabold">{totalSets}</span>
+              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.sets')}</p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-3 mt-6">
+            {exercises?.length > 0 && (
+              <Link
+                to={`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`}
+                className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
+              >
+                {t('client.startWorkout')}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

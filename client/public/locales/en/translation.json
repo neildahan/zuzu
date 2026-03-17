@@ -1,0 +1,63 @@
+{
+  "app": { "title": "Zuzu" },
+  "roles": { "trainer": "Trainer", "client": "Client", "pickRole": "Choose your role" },
+  "common": {
+    "save": "Save", "cancel": "Cancel", "delete": "Delete", "edit": "Edit",
+    "add": "Add", "back": "Back", "loading": "Loading...",
+    "noData": "No data yet", "week": "Week", "day": "Day",
+    "seeAll": "See All", "total": "Total", "inProgress": "In Progress"
+  },
+  "trainer": {
+    "myClients": "My Clients",
+    "newProgram": "New Program",
+    "editProgram": "Edit Program",
+    "programName": "Program Name",
+    "description": "Description",
+    "weeks": "Weeks",
+    "addWorkout": "Add Workout",
+    "workoutName": "Workout Name",
+    "exercises": "Exercises",
+    "addExercise": "Add Exercise",
+    "exerciseName": "Exercise Name",
+    "muscleGroup": "Muscle Group",
+    "sets": "Sets",
+    "repsMin": "Min Reps",
+    "repsMax": "Max Reps",
+    "weight": "Weight (kg)",
+    "rir": "RIR",
+    "restBetweenSets": "Rest Between Sets (s)",
+    "restAfterExercise": "Rest After Exercise (s)",
+    "videoUrl": "Video URL",
+    "notes": "Notes",
+    "clientLogs": "Client Logs",
+    "noClients": "No clients yet",
+    "noPrograms": "No programs yet",
+    "addClient": "Add Client",
+    "clientName": "Client name",
+    "programs": "Programs",
+    "active": "Active",
+    "noAvailableClients": "No available clients",
+    "totalSessions": "Total Sessions",
+    "series": "series workout"
+  },
+  "client": {
+    "myWorkouts": "My Workouts",
+    "currentWeek": "Current Week",
+    "startWorkout": "Start Workout",
+    "logSet": "Log Set",
+    "set": "Set",
+    "reps": "Reps",
+    "completed": "Completed",
+    "previous": "Previous",
+    "markComplete": "Mark Complete",
+    "addSet": "Add Set",
+    "noWorkouts": "No workouts assigned",
+    "noExercises": "No exercises yet"
+  },
+  "nav": { "home": "Home", "workouts": "Workouts", "profile": "Profile" },
+  "language": { "toggle": "עברית" },
+  "login": {
+    "enterTrainerName": "Enter trainer name",
+    "enterClientName": "Enter client name"
+  }
+}

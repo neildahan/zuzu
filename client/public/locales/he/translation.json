@@ -1,0 +1,63 @@
+{
+  "app": { "title": "זוזו" },
+  "roles": { "trainer": "מאמן", "client": "מתאמן", "pickRole": "בחר תפקיד" },
+  "common": {
+    "save": "שמור", "cancel": "ביטול", "delete": "מחק", "edit": "ערוך",
+    "add": "הוסף", "back": "חזרה", "loading": "טוען...",
+    "noData": "אין נתונים עדיין", "week": "שבוע", "day": "יום",
+    "seeAll": "הצג הכל", "total": "סה\"כ", "inProgress": "בתהליך"
+  },
+  "trainer": {
+    "myClients": "הלקוחות שלי",
+    "newProgram": "תוכנית חדשה",
+    "editProgram": "עריכת תוכנית",
+    "programName": "שם התוכנית",
+    "description": "תיאור",
+    "weeks": "שבועות",
+    "addWorkout": "הוסף אימון",
+    "workoutName": "שם האימון",
+    "exercises": "תרגילים",
+    "addExercise": "הוסף תרגיל",
+    "exerciseName": "שם התרגיל",
+    "muscleGroup": "קבוצת שריר",
+    "sets": "סטים",
+    "repsMin": "חזרות מינימום",
+    "repsMax": "חזרות מקסימום",
+    "weight": "משקל (ק\"ג)",
+    "rir": "RIR",
+    "restBetweenSets": "מנוחה בין סטים (שניות)",
+    "restAfterExercise": "מנוחה אחרי תרגיל (שניות)",
+    "videoUrl": "קישור לסרטון",
+    "notes": "הערות",
+    "clientLogs": "יומני לקוח",
+    "noClients": "אין לקוחות עדיין",
+    "noPrograms": "אין תוכניות עדיין",
+    "addClient": "הוסף לקוח",
+    "clientName": "שם הלקוח",
+    "programs": "תוכניות",
+    "active": "פעיל",
+    "noAvailableClients": "אין לקוחות זמינים",
+    "totalSessions": "סה\"כ אימונים",
+    "series": "סדרת אימונים"
+  },
+  "client": {
+    "myWorkouts": "האימונים שלי",
+    "currentWeek": "השבוע הנוכחי",
+    "startWorkout": "התחל אימון",
+    "logSet": "רשום סט",
+    "set": "סט",
+    "reps": "חזרות",
+    "completed": "הושלם",
+    "previous": "קודם",
+    "markComplete": "סמן כהושלם",
+    "addSet": "הוסף סט",
+    "noWorkouts": "אין אימונים",
+    "noExercises": "אין תרגילים עדיין"
+  },
+  "nav": { "home": "בית", "workouts": "אימונים", "profile": "פרופיל" },
+  "language": { "toggle": "English" },
+  "login": {
+    "enterTrainerName": "הכנס שם מאמן",
+    "enterClientName": "הכנס שם מתאמן"
+  }
+}

@@ -47,9 +47,8 @@ export default function TopBar() {
                 <button onClick={toggleLanguage} className="text-xs font-semibold text-gray-500 hover:text-gray-300 px-2.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-sm">
                   {t('language.toggle')}
                 </button>
-                <button onClick={handleLogout} className="relative w-9 h-9 rounded-full bg-white/[0.08] backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-white transition-colors">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                  <div className="absolute -top-0.5 -end-0.5 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">3</div>
+                <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-white/[0.08] backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
               </div>
             </div>
@@ -70,9 +69,6 @@ export default function TopBar() {
                   </span>
                 </div>
               </div>
-              <button className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center text-gray-400">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-              </button>
             </div>
           </div>
         </div>

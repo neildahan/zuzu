@@ -3,9 +3,12 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkout } from '../../api/workouts';
 import { getExercises, createExercise, updateExercise, deleteExercise } from '../../api/exercises';
-import { useState } from 'react';
+import { getExerciseTemplates } from '../../api/exerciseTemplates';
+import { useState, useRef, useEffect } from 'react';
 
 const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Core', 'Full Body'];
+
+const LIBRARY_MUSCLE_GROUPS = ['All', 'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Core'];
 
 const MUSCLE_COLORS = {
   Chest: 'bg-red-50 text-red-500',
@@ -27,12 +30,16 @@ const emptyExercise = {
 };
 
 export default function ExerciseEditor() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id, wid } = useParams();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [showAddChoice, setShowAddChoice] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [libraryFilter, setLibraryFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyExercise);
+  const filterScrollRef = useRef(null);
 
   const { data: workout } = useQuery({
     queryKey: ['workout', wid],
@@ -42,6 +49,12 @@ export default function ExerciseEditor() {
   const { data: exercises } = useQuery({
     queryKey: ['exercises', wid],
     queryFn: () => getExercises(wid),
+  });
+
+  const { data: templates } = useQuery({
+    queryKey: ['exercise-templates', libraryFilter === 'All' ? undefined : libraryFilter],
+    queryFn: () => getExerciseTemplates(libraryFilter === 'All' ? {} : { muscleGroup: libraryFilter }),
+    enabled: showLibrary,
   });
 
   const createMut = useMutation({
@@ -67,6 +80,7 @@ export default function ExerciseEditor() {
 
   const resetForm = () => {
     setShowForm(false);
+    setShowAddChoice(false);
     setEditingId(null);
     setForm(emptyExercise);
   };
@@ -81,6 +95,7 @@ export default function ExerciseEditor() {
     });
     setEditingId(ex._id);
     setShowForm(true);
+    setShowAddChoice(false);
   };
 
   const handleSubmit = (e) => {
@@ -109,6 +124,48 @@ export default function ExerciseEditor() {
   const setTarget = (key, value) => {
     setForm(f => ({ ...f, targets: { ...f.targets, [key]: value } }));
   };
+
+  const handleAddFromLibrary = () => {
+    setShowAddChoice(false);
+    setShowLibrary(true);
+  };
+
+  const handleAddCustom = () => {
+    setShowAddChoice(false);
+    setShowForm(true);
+  };
+
+  const handleSelectTemplate = (template) => {
+    const name = (i18n.language === 'he' && template.nameHe) ? template.nameHe : template.name;
+    const data = {
+      name,
+      muscleGroup: template.muscleGroup || '',
+      videoUrl: template.videoUrl || '',
+      notes: template.notes || '',
+      targets: {
+        sets: template.targets?.sets || 3,
+        repsMin: template.targets?.repsMin || 8,
+        repsMax: template.targets?.repsMax || 12,
+        weight: template.targets?.weight || '',
+        rir: template.targets?.rir ?? 2,
+        restBetweenSets: template.targets?.restBetweenSets || 90,
+        restAfterExercise: template.targets?.restAfterExercise || 120,
+      },
+      order: exercises?.length || 0,
+    };
+    createMut.mutate(data);
+    setShowLibrary(false);
+  };
+
+  // Prevent body scroll when library panel is open
+  useEffect(() => {
+    if (showLibrary) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [showLibrary]);
 
   if (!workout) return <div className="flex items-center justify-center h-40"><div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -140,6 +197,20 @@ export default function ExerciseEditor() {
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-lg text-gray-900">{ex.name}</span>
                     <div className="flex gap-1">
+                      {/* Video button */}
+                      {ex.videoUrl && (
+                        <a
+                          href={ex.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-9 h-9 rounded-xl bg-accent/10 hover:bg-accent/20 flex items-center justify-center transition-colors"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F97316" stroke="none">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </a>
+                      )}
                       <button
                         onClick={() => handleEdit(ex)}
                         className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-accent/10 flex items-center justify-center transition-colors"
@@ -278,14 +349,162 @@ export default function ExerciseEditor() {
             </button>
           </div>
         </form>
+      ) : showAddChoice ? (
+        /* Two-button choice: Library vs Custom */
+        <div className="p-5 rounded-2xl bg-white shadow-sm border border-gray-100 space-y-3">
+          <h3 className="font-bold text-gray-900 text-center">{t('trainer.addExercise')}</h3>
+          <button
+            onClick={handleAddFromLibrary}
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 text-white font-bold transition-all hover:shadow-lg flex items-center justify-center gap-3"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            {t('trainer.fromLibrary') || 'From Library'}
+          </button>
+          <button
+            onClick={handleAddCustom}
+            className="w-full p-4 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold transition-all hover:border-accent hover:text-accent flex items-center justify-center gap-3"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            {t('trainer.createCustom') || 'Create Custom'}
+          </button>
+          <button
+            onClick={() => setShowAddChoice(false)}
+            className="w-full p-3 text-gray-400 font-medium text-sm hover:text-gray-600 transition-colors"
+          >
+            {t('common.cancel')}
+          </button>
+        </div>
       ) : (
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowAddChoice(true)}
           className="w-full p-4 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-accent hover:text-accent font-bold transition-colors"
         >
           + {t('trainer.addExercise')}
         </button>
       )}
+
+      {/* Library picker panel - slide up overlay */}
+      {showLibrary && (
+        <div className="fixed inset-0 z-50 flex items-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowLibrary(false)}
+          />
+          {/* Panel */}
+          <div className="relative w-full max-h-[85vh] bg-gray-900 rounded-t-[32px] flex flex-col animate-slide-up">
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 rounded-full bg-gray-700" />
+            </div>
+
+            {/* Panel header */}
+            <div className="px-6 pb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-extrabold text-white">{t('trainer.exerciseLibrary') || 'Exercise Library'}</h3>
+                <button
+                  onClick={() => setShowLibrary(false)}
+                  className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Muscle group filter tabs */}
+              <div
+                ref={filterScrollRef}
+                className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
+                {LIBRARY_MUSCLE_GROUPS.map(group => (
+                  <button
+                    key={group}
+                    onClick={() => setLibraryFilter(group)}
+                    className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
+                      libraryFilter === group
+                        ? 'bg-accent text-white'
+                        : 'bg-white/[0.06] text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    {group}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Template list */}
+            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-3">
+              {!templates ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : templates.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 font-medium">{t('trainer.noTemplates') || 'No exercises found'}</p>
+                </div>
+              ) : (
+                templates.map(template => {
+                  const displayName = (i18n.language === 'he' && template.nameHe) ? template.nameHe : template.name;
+                  return (
+                    <button
+                      key={template._id}
+                      onClick={() => handleSelectTemplate(template)}
+                      className="w-full text-left p-4 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-gray-900">{displayName}</span>
+                        <div className="flex items-center gap-2">
+                          {template.videoUrl && (
+                            <span className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F97316" stroke="none">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </span>
+                          )}
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {template.muscleGroup && (
+                          <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${MUSCLE_COLORS[template.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
+                            {template.muscleGroup}
+                          </span>
+                        )}
+                        {template.targets?.sets && (
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                            {template.targets.sets}x{template.targets.repsMin}{template.targets.repsMax ? `-${template.targets.repsMax}` : ''}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slide-up animation style */}
+      <style>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

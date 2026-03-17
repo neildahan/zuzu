@@ -4,6 +4,7 @@ const exerciseSchema = new mongoose.Schema(
   {
     workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout', required: true },
     name: { type: String, required: true },
+    nameHe: String,
     muscleGroup: String,
     order: { type: Number, default: 0 },
     targets: {
@@ -17,6 +18,7 @@ const exerciseSchema = new mongoose.Schema(
     },
     videoUrl: String,
     notes: String,
+    notesHe: String,
   },
   { timestamps: true }
 );

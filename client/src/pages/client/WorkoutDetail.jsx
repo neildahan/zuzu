@@ -26,7 +26,7 @@ const MUSCLE_COLORS = {
 };
 
 export default function WorkoutDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { wid } = useParams();
   const { user } = useUser();
 
@@ -75,7 +75,7 @@ export default function WorkoutDetail() {
               className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
             >
               {t('client.startWorkout')}
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
             </Link>
           )}
         </div>
@@ -104,7 +104,21 @@ export default function WorkoutDetail() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-gray-900 truncate">{ex.name}</span>
+                    <span className="font-bold text-gray-900 truncate">{i18n.language === 'he' && ex.nameHe ? ex.nameHe : ex.name}</span>
+                    {/* Video button */}
+                    {ex.videoUrl && (
+                      <a
+                        href={ex.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-8 h-8 rounded-lg bg-accent/10 hover:bg-accent/20 flex items-center justify-center transition-colors shrink-0 ml-2"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#F97316" stroke="none">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </a>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {ex.muscleGroup && (
@@ -127,7 +141,7 @@ export default function WorkoutDetail() {
                     )}
                   </div>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 rtl:rotate-180">
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </Link>

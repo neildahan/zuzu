@@ -128,7 +128,7 @@ export default function RolePicker() {
                 <span className="font-bold text-gray-900 block truncate">{u.name}</span>
                 <span className="text-[11px] font-semibold text-gray-400">{activeTab === 'trainer' ? t('roles.trainer') : t('roles.client')}</span>
               </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
           ))}
         </div>

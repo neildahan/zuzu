@@ -119,7 +119,7 @@ export default function Dashboard() {
                           {p.isActive && <div className="w-2 h-2 rounded-full bg-accent" />}
                           <span className="text-sm font-semibold text-gray-700">{p.name}</span>
                         </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><polyline points="9 18 15 12 9 6" /></svg>
                       </Link>
                     ))}
                   </div>

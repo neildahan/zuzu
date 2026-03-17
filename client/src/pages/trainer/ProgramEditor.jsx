@@ -118,7 +118,7 @@ export default function ProgramEditor() {
                     <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${TYPE_COLORS[workout.type] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                       {workout.type}
                     </span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><polyline points="9 18 15 12 9 6" /></svg>
                   </div>
                 </div>
               </div>

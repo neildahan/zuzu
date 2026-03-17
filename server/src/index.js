@@ -9,6 +9,7 @@ app.use(express.json());
 
 // Mount routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/exercise-templates', require('./routes/exerciseTemplates'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/programs', require('./routes/programs'));
 app.use('/api/programs/:programId/workouts', require('./routes/workouts'));

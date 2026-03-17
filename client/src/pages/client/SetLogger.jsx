@@ -8,7 +8,7 @@ import { getWorkoutLogs, createWorkoutLog, updateWorkoutLog, getPreviousLog } fr
 import { useState, useEffect, useMemo } from 'react';
 
 export default function SetLogger() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { wid, eid } = useParams();
   const { user } = useUser();
   const queryClient = useQueryClient();
@@ -132,7 +132,22 @@ export default function SetLogger() {
     <div className="space-y-6">
       {/* Exercise header card */}
       <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
-        <h2 className="text-2xl font-extrabold">{exercise.name}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-extrabold">{i18n.language === 'he' && exercise.nameHe ? exercise.nameHe : exercise.name}</h2>
+          {/* Video link button */}
+          {exercise.videoUrl && (
+            <a
+              href={exercise.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-colors shrink-0"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#F97316" stroke="none">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </a>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2 mt-3">
           {exercise.muscleGroup && (
             <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-accent/20 text-accent">{exercise.muscleGroup}</span>
@@ -188,11 +203,11 @@ export default function SetLogger() {
       {/* Set logging table */}
       <div className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[2.5rem_1fr_1fr_1fr_3rem] gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">#</span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{t('trainer.weight')}</span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{t('client.reps')}</span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">RIR</span>
+        <div className="grid grid-cols-[1.5rem_1fr_1fr_1fr_2.5rem] gap-1.5 px-3 py-3 bg-gray-50 border-b border-gray-100">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">#</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">{t('trainer.weight')}</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">{t('client.reps')}</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">RIR</span>
           <span></span>
         </div>
 
@@ -200,7 +215,7 @@ export default function SetLogger() {
         {sets.map((set, i) => (
           <div
             key={i}
-            className={`grid grid-cols-[2.5rem_1fr_1fr_1fr_3rem] gap-2 items-center px-4 py-3 border-b border-gray-50 transition-all duration-300 ${
+            className={`grid grid-cols-[1.5rem_1fr_1fr_1fr_2.5rem] gap-1.5 items-center px-3 py-3 border-b border-gray-50 transition-all duration-300 ${
               set.isCompleted ? 'bg-emerald-50/50' : ''
             }`}
           >
@@ -209,23 +224,23 @@ export default function SetLogger() {
               type="number"
               value={set.weight}
               onChange={e => handleSetChange(i, 'weight', Number(e.target.value))}
-              className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+              className="p-2 rounded-lg bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all w-full min-w-0"
             />
             <input
               type="number"
               value={set.reps}
               onChange={e => handleSetChange(i, 'reps', Number(e.target.value))}
-              className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+              className="p-2 rounded-lg bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all w-full min-w-0"
             />
             <input
               type="number"
               value={set.rir}
               onChange={e => handleSetChange(i, 'rir', Number(e.target.value))}
-              className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+              className="p-2 rounded-lg bg-gray-50 border border-gray-200 outline-none text-center text-sm font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all w-full min-w-0"
             />
             <button
               onClick={() => toggleSetComplete(i)}
-              className={`w-10 h-10 rounded-xl border-2 text-sm font-bold transition-all mx-auto flex items-center justify-center ${
+              className={`w-8 h-8 rounded-lg border-2 text-sm font-bold transition-all mx-auto flex items-center justify-center shrink-0 ${
                 set.isCompleted
                   ? 'bg-accent border-accent text-white shadow-md shadow-accent/30'
                   : 'bg-white border-gray-200 text-gray-300 hover:border-accent/50'

@@ -38,7 +38,11 @@
     "active": "פעיל",
     "noAvailableClients": "אין לקוחות זמינים",
     "totalSessions": "סה\"כ אימונים",
-    "series": "סדרת אימונים"
+    "series": "סדרת אימונים",
+    "fromLibrary": "מהספרייה",
+    "createCustom": "יצירה ידנית",
+    "exerciseLibrary": "ספריית תרגילים",
+    "searchExercises": "חיפוש תרגילים..."
   },
   "client": {
     "myWorkouts": "האימונים שלי",
@@ -54,10 +58,53 @@
     "noWorkouts": "אין אימונים",
     "noExercises": "אין תרגילים עדיין"
   },
-  "nav": { "home": "בית", "workouts": "אימונים", "profile": "פרופיל" },
+  "nav": { "home": "בית", "workouts": "אימונים", "stats": "סטטיסטיקה", "profile": "פרופיל" },
   "language": { "toggle": "English" },
   "login": {
     "enterTrainerName": "הכנס שם מאמן",
     "enterClientName": "הכנס שם מתאמן"
+  },
+  "days": {
+    "0": "ראשון", "1": "שני", "2": "שלישי", "3": "רביעי", "4": "חמישי", "5": "שישי", "6": "שבת"
+  },
+  "workoutType": {
+    "strength": "כוח",
+    "cardio": "אירובי",
+    "hybrid": "משולב"
+  },
+  "history": {
+    "title": "סטטיסטיקה",
+    "myProgress": "ההתקדמות שלי",
+    "selectClient": "בחר לקוח",
+    "totalSessions": "סה\"כ אימונים",
+    "totalVolume": "נפח כולל",
+    "activeWeeks": "שבועות פעילים",
+    "weightProgression": "התקדמות במשקל",
+    "volumeProgression": "התקדמות בנפח",
+    "bestSet": "סט שיא",
+    "muscleDistribution": "התפלגות שרירים",
+    "noHistory": "אין היסטוריית אימונים עדיין",
+    "kg": "ק\"ג",
+    "vol": "נפח",
+    "sessions": "אימונים",
+    "allExercises": "כל התרגילים",
+    "byMuscleGroup": "לפי קבוצת שריר",
+    "needMoreData": "השלם עוד אימונים כדי לראות גרפים",
+    "searchExercises": "חיפוש תרגילים...",
+    "sessionLog": "היסטוריית אימונים"
+  },
+  "muscle": {
+    "Chest": "חזה",
+    "Back": "גב",
+    "Shoulders": "כתפיים",
+    "Biceps": "ביספס",
+    "Triceps": "טרייספס",
+    "Quads": "ארבע ראשי",
+    "Hamstrings": "אחורי ירך",
+    "Glutes": "ישבן",
+    "Calves": "שוקיים",
+    "Core": "ליבה",
+    "Full Body": "כל הגוף",
+    "all": "הכל"
   }
 }

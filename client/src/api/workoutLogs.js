@@ -5,3 +5,4 @@ export const getWorkoutLog = (id) => api.get(`/workout-logs/${id}`).then(r => r.
 export const createWorkoutLog = (data) => api.post('/workout-logs', data).then(r => r.data);
 export const updateWorkoutLog = (id, data) => api.patch(`/workout-logs/${id}`, data).then(r => r.data);
 export const getPreviousLog = (params) => api.get('/workout-logs/previous', { params }).then(r => r.data);
+export const getExerciseHistory = (params) => api.get('/workout-logs/history', { params }).then(r => r.data);

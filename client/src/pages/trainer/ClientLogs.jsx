@@ -5,8 +5,9 @@ import { getUser } from '../../api/users';
 import { getWorkoutLogs } from '../../api/workoutLogs';
 
 export default function ClientLogs() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { cid } = useParams();
+  const locale = i18n.language === 'he' ? 'he-IL' : 'en-US';
 
   const { data: client } = useQuery({
     queryKey: ['user', cid],
@@ -28,7 +29,7 @@ export default function ClientLogs() {
         <h2 className="text-2xl font-extrabold mt-1">{client?.name}</h2>
         <div className="mt-3">
           <span className="text-2xl font-extrabold">{logs?.length || 0}</span>
-          <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">Total Sessions</p>
+          <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('history.totalSessions')}</p>
         </div>
       </div>
 
@@ -61,7 +62,7 @@ export default function ClientLogs() {
                           {t('common.week')} {log.weekNumber}
                         </span>
                         <span className="block text-[11px] text-gray-400 font-medium mt-0.5">
-                          {new Date(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {new Date(log.date).toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' })}
                         </span>
                       </div>
                     </div>
@@ -69,7 +70,7 @@ export default function ClientLogs() {
                       <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${
                         log.isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'
                       }`}>
-                        {log.isCompleted ? t('client.completed') : 'In progress'}
+                        {log.isCompleted ? t('client.completed') : t('common.inProgress')}
                       </span>
                     </div>
                   </div>

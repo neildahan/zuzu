@@ -57,7 +57,7 @@ export default function WorkoutDetail() {
         <div className="relative z-10 p-6 text-white">
           <div className="flex items-center gap-2 mb-2">
             <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[workout.type] || 'bg-white/10 text-gray-400'}`}>
-              {workout.type}
+              {t('workoutType.' + workout.type)}
             </span>
           </div>
           <h2 className="text-3xl font-extrabold">{workout.name}</h2>
@@ -131,7 +131,7 @@ export default function WorkoutDetail() {
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {ex.muscleGroup && (
                       <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
-                        {ex.muscleGroup}
+                        {t('muscle.' + ex.muscleGroup)}
                       </span>
                     )}
                     <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">

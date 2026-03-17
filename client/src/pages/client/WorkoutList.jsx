@@ -21,7 +21,7 @@ const TYPE_STRIP = {
 };
 
 export default function WorkoutList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useUser();
   const [selectedWeek, setSelectedWeek] = useState(1);
 
@@ -53,32 +53,43 @@ export default function WorkoutList() {
     <div className="space-y-6">
       {/* Program header */}
       <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 text-white">
-        <span className="text-[11px] font-bold text-accent uppercase tracking-widest">{t('common.week')} {selectedWeek}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-accent uppercase tracking-widest">
+            {program.weekCount === 1 ? (i18n.language === 'he' ? 'תוכנית שבועית חוזרת' : 'Repeating Weekly') : `${t('common.week')} ${selectedWeek}`}
+          </span>
+          {program.weekCount === 1 && (
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+              ∞
+            </span>
+          )}
+        </div>
         <h2 className="text-2xl font-extrabold mt-1">{program.name}</h2>
         <div className="flex gap-6 mt-3">
           <div>
             <span className="text-2xl font-extrabold">{workouts?.length || 0}</span>
-            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('nav.workouts') || 'Workouts'}</p>
+            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('nav.workouts')}</p>
           </div>
         </div>
       </div>
 
-      {/* Week tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {weeks.map(w => (
-          <button
-            key={w}
-            onClick={() => setSelectedWeek(w)}
-            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
-              selectedWeek === w
-                ? 'bg-accent text-white shadow-md shadow-accent/30'
-                : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
-            }`}
-          >
-            {t('common.week')} {w}
-          </button>
-        ))}
-      </div>
+      {/* Week tabs - only show if multi-week */}
+      {program.weekCount > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {weeks.map(w => (
+            <button
+              key={w}
+              onClick={() => setSelectedWeek(w)}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                selectedWeek === w
+                  ? 'bg-accent text-white shadow-md shadow-accent/30'
+                  : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              {t('common.week')} {w}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Workout cards */}
       <div className="space-y-3">
@@ -97,10 +108,10 @@ export default function WorkoutList() {
                     <h3 className="font-bold text-lg text-white">{workout.name}</h3>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">
-                        {DAY_NAMES[workout.dayOfWeek]}
+                        {t('days.' + workout.dayOfWeek)}
                       </span>
                       <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[workout.type] || 'bg-white/10 text-gray-400'}`}>
-                        {workout.type}
+                        {t('workoutType.' + workout.type)}
                       </span>
                     </div>
                   </div>

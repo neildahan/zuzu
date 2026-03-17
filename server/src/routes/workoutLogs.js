@@ -17,7 +17,8 @@ const createLogSchema = z.object({
 router.post('/', validate(createLogSchema), controller.create);
 router.get('/', controller.list);
 
-// IMPORTANT: /previous must come before /:id
+// IMPORTANT: named routes must come before /:id
+router.get('/history', controller.history);
 router.get('/previous', controller.previous);
 
 router.get('/:id', controller.getById);

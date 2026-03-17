@@ -37,6 +37,7 @@ export default function ExerciseEditor() {
   const [showAddChoice, setShowAddChoice] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [libraryFilter, setLibraryFilter] = useState('All');
+  const [librarySearch, setLibrarySearch] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyExercise);
   const filterScrollRef = useRef(null);
@@ -137,19 +138,22 @@ export default function ExerciseEditor() {
 
   const handleSelectTemplate = (template) => {
     const name = (i18n.language === 'he' && template.nameHe) ? template.nameHe : template.name;
+    const dt = template.defaultTargets || template.targets || {};
     const data = {
       name,
+      nameHe: template.nameHe || '',
       muscleGroup: template.muscleGroup || '',
       videoUrl: template.videoUrl || '',
       notes: template.notes || '',
+      notesHe: template.notesHe || '',
       targets: {
-        sets: template.targets?.sets || 3,
-        repsMin: template.targets?.repsMin || 8,
-        repsMax: template.targets?.repsMax || 12,
-        weight: template.targets?.weight || '',
-        rir: template.targets?.rir ?? 2,
-        restBetweenSets: template.targets?.restBetweenSets || 90,
-        restAfterExercise: template.targets?.restAfterExercise || 120,
+        sets: dt.sets || 3,
+        repsMin: dt.repsMin || 8,
+        repsMax: dt.repsMax || 12,
+        weight: dt.weight || '',
+        rir: dt.rir ?? 2,
+        restBetweenSets: dt.restBetweenSets || 90,
+        restAfterExercise: dt.restAfterExercise || 120,
       },
       order: exercises?.length || 0,
     };
@@ -228,7 +232,7 @@ export default function ExerciseEditor() {
                   <div className="flex flex-wrap gap-2 mt-2">
                     {ex.muscleGroup && (
                       <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
-                        {ex.muscleGroup}
+                        {t('muscle.' + ex.muscleGroup)}
                       </span>
                     )}
                     <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500">
@@ -281,7 +285,7 @@ export default function ExerciseEditor() {
               className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
             >
               <option value="">{t('trainer.muscleGroup')}</option>
-              {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+              {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{t('muscle.' + g)}</option>)}
             </select>
           </div>
 
@@ -387,75 +391,83 @@ export default function ExerciseEditor() {
         </button>
       )}
 
-      {/* Library picker panel - slide up overlay */}
+      {/* Library picker panel - full screen overlay */}
       {showLibrary && (
-        <div className="fixed inset-0 z-50 flex items-end">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowLibrary(false)}
-          />
-          {/* Panel */}
-          <div className="relative w-full max-h-[85vh] bg-gray-900 rounded-t-[32px] flex flex-col animate-slide-up">
-            {/* Handle bar */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-gray-700" />
-            </div>
-
-            {/* Panel header */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-extrabold text-white">{t('trainer.exerciseLibrary') || 'Exercise Library'}</h3>
-                <button
-                  onClick={() => setShowLibrary(false)}
-                  className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Muscle group filter tabs */}
-              <div
-                ref={filterScrollRef}
-                className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide"
-                style={{ WebkitOverflowScrolling: 'touch' }}
+        <div className="fixed inset-0 z-50 flex flex-col bg-gray-900">
+          {/* Header */}
+          <div className="shrink-0 px-5 pt-5 pb-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-extrabold text-white">{t('trainer.exerciseLibrary')}</h3>
+              <button
+                onClick={() => { setShowLibrary(false); setLibrarySearch(''); }}
+                className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center"
               >
-                {LIBRARY_MUSCLE_GROUPS.map(group => (
-                  <button
-                    key={group}
-                    onClick={() => setLibraryFilter(group)}
-                    className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
-                      libraryFilter === group
-                        ? 'bg-accent text-white'
-                        : 'bg-white/[0.06] text-gray-500 hover:text-gray-300'
-                    }`}
-                  >
-                    {group}
-                  </button>
-                ))}
-              </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
 
-            {/* Template list */}
-            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-3">
-              {!templates ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : templates.length === 0 ? (
+            {/* Search */}
+            <div className="relative mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute start-4 top-1/2 -translate-y-1/2">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                value={librarySearch}
+                onChange={e => setLibrarySearch(e.target.value)}
+                placeholder={t('trainer.searchExercises')}
+                className="w-full ps-11 pe-4 py-3 rounded-2xl bg-white/[0.06] border-2 border-white/[0.08] focus:border-accent outline-none font-medium text-white placeholder:text-gray-600 text-base"
+              />
+            </div>
+
+            {/* Muscle group filter tabs */}
+            <div
+              ref={filterScrollRef}
+              className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {LIBRARY_MUSCLE_GROUPS.map(group => (
+                <button
+                  key={group}
+                  onClick={() => setLibraryFilter(group)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
+                    libraryFilter === group
+                      ? 'bg-accent text-white'
+                      : 'bg-white/[0.06] text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  {group === 'All' ? t('muscle.all') : t('muscle.' + group)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Template list */}
+          <div className="flex-1 overflow-y-auto px-5 pb-8 pt-3 space-y-2">
+            {!templates ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-[3px] border-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (() => {
+              const search = librarySearch.toLowerCase();
+              const filtered = search
+                ? templates.filter(t => t.name.toLowerCase().includes(search) || (t.nameHe && t.nameHe.includes(librarySearch)))
+                : templates;
+              return filtered.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 font-medium">{t('trainer.noTemplates') || 'No exercises found'}</p>
+                  <p className="text-gray-500 font-medium">{t('common.noData')}</p>
                 </div>
               ) : (
-                templates.map(template => {
+                filtered.map(template => {
                   const displayName = (i18n.language === 'he' && template.nameHe) ? template.nameHe : template.name;
+                  const dt = template.defaultTargets || {};
                   return (
                     <button
                       key={template._id}
-                      onClick={() => handleSelectTemplate(template)}
-                      className="w-full text-left p-4 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                      onClick={() => { handleSelectTemplate(template); setLibrarySearch(''); }}
+                      className="w-full text-start p-4 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-gray-900">{displayName}</span>
@@ -475,20 +487,20 @@ export default function ExerciseEditor() {
                       <div className="flex flex-wrap gap-2 mt-2">
                         {template.muscleGroup && (
                           <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${MUSCLE_COLORS[template.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
-                            {template.muscleGroup}
+                            {t('muscle.' + template.muscleGroup)}
                           </span>
                         )}
-                        {template.targets?.sets && (
+                        {dt.sets && (
                           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                            {template.targets.sets}x{template.targets.repsMin}{template.targets.repsMax ? `-${template.targets.repsMax}` : ''}
+                            {dt.sets}x{dt.repsMin}{dt.repsMax ? `-${dt.repsMax}` : ''}
                           </span>
                         )}
                       </div>
                     </button>
                   );
                 })
-              )}
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}

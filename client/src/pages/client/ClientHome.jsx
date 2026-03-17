@@ -92,14 +92,14 @@ export default function ClientHome() {
                   <div className="flex items-center gap-3 mb-3">
                     <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-400">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      {w.type}
+                      {t('workoutType.' + w.type)}
                     </span>
                   </div>
                   <h4 className="text-white font-black text-xl">{w.name}</h4>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-gray-600 text-xs font-semibold">{w.targets?.sets || 3} series workout</span>
                     <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-white/[0.06] text-gray-500 uppercase tracking-wider">
-                      {w.type}
+                      {t('workoutType.' + w.type)}
                     </span>
                   </div>
                 </div>

@@ -44,9 +44,6 @@ export default function TopBar() {
                 <span className="text-xs font-semibold uppercase tracking-wider">{dateStr}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={toggleLanguage} className="text-xs font-semibold text-gray-500 hover:text-gray-300 px-2.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-sm">
-                  {t('language.toggle')}
-                </button>
                 <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-white/[0.08] backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-white transition-colors">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
@@ -55,17 +52,18 @@ export default function TopBar() {
 
             {/* User greeting */}
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-orange-400 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-accent/20 ring-2 ring-white/20">
-                {initial}
-              </div>
+              <button onClick={() => navigate('/profile')} className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-orange-400 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-accent/20 ring-2 ring-white/20 overflow-hidden shrink-0">
+                {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : initial}
+              </button>
               <div className="flex-1">
                 <h1 className="text-[26px] font-black text-white leading-tight">
                   {i18n.language === 'he' ? `שלום, ${user.name}!` : `Hello, ${user.name}!`}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent">
-                    {user.role === 'trainer' ? '+ ' : ''}
-                    {user.role === 'trainer' ? (i18n.language === 'he' ? 'מאמן' : 'Trainer') : (i18n.language === 'he' ? 'מתאמן' : 'Client')}
+                    {user.role === 'trainer'
+                      ? (i18n.language === 'he' ? (user.gender === 'female' ? 'מאמנת' : 'מאמן') : 'Trainer')
+                      : (i18n.language === 'he' ? (user.gender === 'female' ? 'מתאמנת' : 'מתאמן') : 'Client')}
                   </span>
                 </div>
               </div>
@@ -90,14 +88,7 @@ export default function TopBar() {
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <div className="flex items-center gap-2">
-          <button onClick={toggleLanguage} className="text-[11px] font-semibold text-gray-400 px-2.5 py-1 rounded-full bg-gray-100">
-            {t('language.toggle')}
-          </button>
-          <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          </button>
-        </div>
+        <div className="w-9" />
       </div>
     </header>
   );

@@ -9,6 +9,11 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     trainerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     locale: { type: String, enum: ['en', 'he'], default: 'en' },
+    avatarUrl: String,
+    gender: { type: String, enum: ['male', 'female'], default: 'male' },
+    height: Number,
+    weight: Number,
+    goal: String,
   },
   { timestamps: true }
 );

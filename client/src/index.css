@@ -6,6 +6,8 @@
   body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     @apply bg-gray-50 text-black antialiased text-base font-semibold;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 
   input[type="number"]::-webkit-inner-spin-button,

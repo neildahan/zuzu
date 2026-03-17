@@ -5,7 +5,73 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkout } from '../../api/workouts';
 import { getExercises } from '../../api/exercises';
 import { getWorkoutLogs, createWorkoutLog, updateWorkoutLog, getPreviousLog } from '../../api/workoutLogs';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+
+// Rest Timer Component
+function RestTimer({ seconds, onComplete, onSkip }) {
+  const [remaining, setRemaining] = useState(seconds);
+  const intervalRef = useRef(null);
+  const total = seconds;
+  const progress = remaining / total;
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current);
+          // Vibrate if supported
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, [seconds, onComplete]);
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+
+  // SVG circle params
+  const size = 120;
+  const stroke = 6;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dashoffset = circumference * (1 - progress);
+
+  return (
+    <div className="rounded-2xl bg-gray-900 p-6 flex flex-col items-center gap-4">
+      {/* Circular progress */}
+      <div className="relative">
+        <svg width={size} height={size} className="-rotate-90">
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#1F2937" strokeWidth={stroke} />
+          <circle
+            cx={size / 2} cy={size / 2} r={radius} fill="none"
+            stroke="#F97316" strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={circumference} strokeDashoffset={dashoffset}
+            className="transition-all duration-1000 ease-linear"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-black text-white tabular-nums">
+            {mins}:{secs.toString().padStart(2, '0')}
+          </span>
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1">
+            Rest
+          </span>
+        </div>
+      </div>
+
+      <button
+        onClick={() => { clearInterval(intervalRef.current); onSkip(); }}
+        className="px-6 py-2.5 rounded-full bg-white/[0.08] text-gray-400 font-bold text-sm active:scale-95 transition-transform"
+      >
+        Skip
+      </button>
+    </div>
+  );
+}
 
 export default function SetLogger() {
   const { t, i18n } = useTranslation();
@@ -40,6 +106,7 @@ export default function SetLogger() {
   const [currentLog, setCurrentLog] = useState(null);
   const [sets, setSets] = useState([]);
   const [saved, setSaved] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
 
   const createLogMut = useMutation({
     mutationFn: (data) => createWorkoutLog(data),
@@ -88,8 +155,19 @@ export default function SetLogger() {
   };
 
   const toggleSetComplete = (index) => {
-    setSets(prev => prev.map((s, i) => i === index ? { ...s, isCompleted: !s.isCompleted } : s));
+    const set = sets[index];
+    const nowComplete = !set.isCompleted;
+    setSets(prev => prev.map((s, i) => i === index ? { ...s, isCompleted: nowComplete } : s));
+
+    // Start rest timer when completing a set (and there are more sets to do)
+    if (nowComplete && index < sets.length - 1) {
+      setShowTimer(true);
+    }
   };
+
+  const dismissTimer = useCallback(() => {
+    setShowTimer(false);
+  }, []);
 
   const addSet = () => {
     const last = sets[sets.length - 1];
@@ -127,6 +205,7 @@ export default function SetLogger() {
   if (!exercise) return <div className="flex items-center justify-center h-40"><div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" /></div>;
 
   const completedSets = sets.filter(s => s.isCompleted).length;
+  const restSeconds = exercise.targets.restBetweenSets || 90;
 
   return (
     <div className="space-y-6">
@@ -134,7 +213,6 @@ export default function SetLogger() {
       <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-extrabold">{i18n.language === 'he' && exercise.nameHe ? exercise.nameHe : exercise.name}</h2>
-          {/* Video link button */}
           {exercise.videoUrl && (
             <a
               href={exercise.videoUrl}
@@ -161,8 +239,11 @@ export default function SetLogger() {
           {exercise.targets.rir != null && (
             <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">RIR {exercise.targets.rir}</span>
           )}
+          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">
+            {restSeconds}s {i18n.language === 'he' ? 'מנוחה' : 'rest'}
+          </span>
         </div>
-        {exercise.notes && <p className="mt-3 text-sm text-gray-400">{exercise.notes}</p>}
+        {exercise.notes && <p className="mt-3 text-sm text-gray-400">{i18n.language === 'he' && exercise.notesHe ? exercise.notesHe : exercise.notes}</p>}
 
         {/* Progress bar */}
         <div className="mt-5 flex items-center gap-3">
@@ -175,6 +256,15 @@ export default function SetLogger() {
           <span className="text-sm font-extrabold text-gray-400">{completedSets}/{sets.length}</span>
         </div>
       </div>
+
+      {/* Rest Timer */}
+      {showTimer && (
+        <RestTimer
+          seconds={restSeconds}
+          onComplete={dismissTimer}
+          onSkip={dismissTimer}
+        />
+      )}
 
       {/* Previous performance */}
       {previous?.sets?.length > 0 && (

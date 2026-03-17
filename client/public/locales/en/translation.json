@@ -38,7 +38,11 @@
     "active": "Active",
     "noAvailableClients": "No available clients",
     "totalSessions": "Total Sessions",
-    "series": "series workout"
+    "series": "series workout",
+    "fromLibrary": "From Library",
+    "createCustom": "Create Custom",
+    "exerciseLibrary": "Exercise Library",
+    "searchExercises": "Search exercises..."
   },
   "client": {
     "myWorkouts": "My Workouts",
@@ -54,10 +58,53 @@
     "noWorkouts": "No workouts assigned",
     "noExercises": "No exercises yet"
   },
-  "nav": { "home": "Home", "workouts": "Workouts", "profile": "Profile" },
+  "nav": { "home": "Home", "workouts": "Workouts", "stats": "Stats", "profile": "Profile" },
   "language": { "toggle": "עברית" },
   "login": {
     "enterTrainerName": "Enter trainer name",
     "enterClientName": "Enter client name"
+  },
+  "days": {
+    "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat"
+  },
+  "workoutType": {
+    "strength": "Strength",
+    "cardio": "Cardio",
+    "hybrid": "Hybrid"
+  },
+  "history": {
+    "title": "Stats",
+    "myProgress": "My Progress",
+    "selectClient": "Select Client",
+    "totalSessions": "Total Sessions",
+    "totalVolume": "Total Volume",
+    "activeWeeks": "Active Weeks",
+    "weightProgression": "Weight Progression",
+    "volumeProgression": "Volume Progression",
+    "bestSet": "Best Set",
+    "muscleDistribution": "Muscle Distribution",
+    "noHistory": "No workout history yet",
+    "kg": "kg",
+    "vol": "Volume",
+    "sessions": "Sessions",
+    "allExercises": "All Exercises",
+    "byMuscleGroup": "By Muscle Group",
+    "needMoreData": "Complete more sessions to see charts",
+    "searchExercises": "Search exercises...",
+    "sessionLog": "Session History"
+  },
+  "muscle": {
+    "Chest": "Chest",
+    "Back": "Back",
+    "Shoulders": "Shoulders",
+    "Biceps": "Biceps",
+    "Triceps": "Triceps",
+    "Quads": "Quads",
+    "Hamstrings": "Hamstrings",
+    "Glutes": "Glutes",
+    "Calves": "Calves",
+    "Core": "Core",
+    "Full Body": "Full Body",
+    "all": "All"
   }
 }

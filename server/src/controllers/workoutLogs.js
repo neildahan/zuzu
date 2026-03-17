@@ -45,6 +45,28 @@ exports.previous = async (req, res) => {
   }
 };
 
+exports.history = async (req, res) => {
+  try {
+    const { clientId, exerciseId } = req.query;
+    if (!clientId) {
+      return res.status(400).json({ error: 'clientId is required' });
+    }
+    const filter = { clientId, isCompleted: true };
+    if (exerciseId) {
+      filter['exercises.exerciseId'] = exerciseId;
+    }
+    const logs = await WorkoutLog.find(filter)
+      .sort({ date: 1 })
+      .populate({
+        path: 'exercises.exerciseId',
+        select: 'name nameHe muscleGroup',
+      });
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.getById = async (req, res) => {
   try {
     const log = await WorkoutLog.findById(req.params.id);

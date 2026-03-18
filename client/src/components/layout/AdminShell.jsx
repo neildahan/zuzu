@@ -69,15 +69,21 @@ export default function AdminShell() {
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center text-white font-bold text-sm">
+          <NavLink
+            to="/admin/profile"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 mb-3 p-2 -mx-2 rounded-xl transition-colors ${isActive ? 'bg-accent/10' : 'hover:bg-white/5'}`
+            }
+          >
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{user?.name}</p>
               <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
             </div>
-          </div>
+          </NavLink>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition-colors"

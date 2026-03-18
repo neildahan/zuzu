@@ -23,6 +23,7 @@ import UsersPage from './pages/admin/UsersPage';
 import TemplatesPage from './pages/admin/TemplatesPage';
 import ProgramsPage from './pages/admin/ProgramsPage';
 import WorkoutLogsPage from './pages/admin/WorkoutLogsPage';
+import AdminProfile from './pages/admin/AdminProfile';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,6 +81,7 @@ function AppRoutes() {
         <Route path="/admin/templates" element={<TemplatesPage />} />
         <Route path="/admin/programs" element={<ProgramsPage />} />
         <Route path="/admin/logs" element={<WorkoutLogsPage />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
       </Route>
     </Routes>
     </>

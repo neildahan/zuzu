@@ -1,4 +1,5 @@
 const Exercise = require('../models/Exercise');
+const Workout = require('../models/Workout');
 
 exports.create = async (req, res) => {
   try {
@@ -36,6 +37,21 @@ exports.remove = async (req, res) => {
     const exercise = await Exercise.findByIdAndDelete(req.params.id);
     if (!exercise) return res.status(404).json({ error: 'Exercise not found' });
     res.json({ message: 'Exercise deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.countByProgram = async (req, res) => {
+  try {
+    const { programId, week } = req.query;
+    if (!programId) return res.status(400).json({ error: 'programId is required' });
+    const filter = { programId };
+    if (week) filter.weekNumber = Number(week);
+    const workouts = await Workout.find(filter).select('_id');
+    const workoutIds = workouts.map(w => w._id);
+    const count = await Exercise.countDocuments({ workoutId: { $in: workoutIds } });
+    res.json({ count });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

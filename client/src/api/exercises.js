@@ -5,3 +5,4 @@ export const createExercise = (workoutId, data) => api.post(`/workouts/${workout
 export const updateExercise = (id, data) => api.patch(`/exercises/${id}`, data).then(r => r.data);
 export const deleteExercise = (id) => api.delete(`/exercises/${id}`).then(r => r.data);
 export const reorderExercises = (workoutId, orderedIds) => api.patch(`/workouts/${workoutId}/exercises/reorder`, { orderedIds }).then(r => r.data);
+export const getExerciseCount = (programId, week) => api.get('/exercises/count', { params: { programId, week } }).then(r => r.data.count);

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../context/UserContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { getPrograms } from '../../api/programs';
 import { getWorkouts } from '../../api/workouts';
+import { getExercises } from '../../api/exercises';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -46,6 +47,17 @@ export default function WorkoutList() {
       <p className="text-gray-400 font-medium">{t('client.noWorkouts')}</p>
     </div>
   );
+
+  const exerciseQueries = useQueries({
+    queries: (workouts || []).map(w => ({
+      queryKey: ['exercises', w._id],
+      queryFn: () => getExercises(w._id),
+    })),
+  });
+  const exerciseCounts = {};
+  (workouts || []).forEach((w, i) => {
+    exerciseCounts[w._id] = exerciseQueries[i]?.data?.length;
+  });
 
   const weeks = Array.from({ length: program.weekCount }, (_, i) => i + 1);
 
@@ -112,6 +124,9 @@ export default function WorkoutList() {
                       </span>
                       <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[workout.type] || 'bg-white/10 text-gray-400'}`}>
                         {t('workoutType.' + workout.type)}
+                      </span>
+                      <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">
+                        {exerciseCounts[workout._id] ?? '–'} {t('trainer.exercises').toLowerCase()}
                       </span>
                     </div>
                   </div>

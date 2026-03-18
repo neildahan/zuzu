@@ -55,6 +55,8 @@
     "previous": "Previous",
     "markComplete": "Mark Complete",
     "addSet": "Add Set",
+    "upcoming": "Upcoming",
+    "today": "Today",
     "noWorkouts": "No workouts assigned",
     "noExercises": "No exercises yet"
   },

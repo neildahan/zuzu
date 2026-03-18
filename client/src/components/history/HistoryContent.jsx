@@ -63,7 +63,7 @@ export default function HistoryContent({ clientId }) {
             label={t('history.vol')}
             color="bg-white/10"
           />
-          <MetricCard value={stats.activeWeeks} label={t('history.activeWeeks')} color="bg-white/10" />
+          <MetricCard value={stats.activeWeeks} label={t('trainer.weeks')} color="bg-white/10" />
         </div>
       </div>
 

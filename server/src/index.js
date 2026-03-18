@@ -23,6 +23,7 @@ app.use('/api/workouts', require('./routes/workoutsDirect'));
 app.use('/api/workouts/:workoutId/exercises', require('./routes/exercises'));
 app.use('/api/exercises', require('./routes/exercisesDirect'));
 app.use('/api/workout-logs', require('./routes/workoutLogs'));
+app.use('/api/admin', require('./routes/admin'));
 
 // SPA fallback — serve index.html for non-API routes in production
 if (process.env.NODE_ENV === 'production') {

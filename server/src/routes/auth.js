@@ -8,7 +8,7 @@ const registerSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['trainer', 'client']),
+  role: z.enum(['trainer', 'client', 'admin']),
   trainerId: z.string().optional(),
   locale: z.enum(['en', 'he']).optional(),
 });

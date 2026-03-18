@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { register } from '../api/auth';
 import { useState } from 'react';
@@ -9,7 +9,9 @@ export default function Register() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { setUser } = useUser();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'client' });
+  const [searchParams] = useSearchParams();
+  const prefilledRole = searchParams.get('role');
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: prefilledRole === 'trainer' ? 'trainer' : 'client' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

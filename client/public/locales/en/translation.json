@@ -1,6 +1,6 @@
 {
   "app": { "title": "Zuzu" },
-  "roles": { "trainer": "Trainer", "client": "Client", "pickRole": "Choose your role" },
+  "roles": { "trainer": "Trainer", "client": "Trainee", "admin": "Admin", "pickRole": "Choose your role" },
   "common": {
     "save": "Save", "cancel": "Cancel", "delete": "Delete", "edit": "Edit",
     "add": "Add", "back": "Back", "loading": "Loading...",
@@ -8,7 +8,7 @@
     "seeAll": "See All", "total": "Total", "inProgress": "In Progress"
   },
   "trainer": {
-    "myClients": "My Clients",
+    "myClients": "My Trainees",
     "newProgram": "New Program",
     "editProgram": "Edit Program",
     "programName": "Program Name",
@@ -29,14 +29,14 @@
     "restAfterExercise": "Rest After Exercise (s)",
     "videoUrl": "Video URL",
     "notes": "Notes",
-    "clientLogs": "Client Logs",
-    "noClients": "No clients yet",
+    "clientLogs": "Trainee Logs",
+    "noClients": "No trainees yet",
     "noPrograms": "No programs yet",
-    "addClient": "Add Client",
-    "clientName": "Client name",
+    "addClient": "Add Trainee",
+    "clientName": "Trainee name",
     "programs": "Programs",
     "active": "Active",
-    "noAvailableClients": "No available clients",
+    "noAvailableClients": "No available trainees",
     "totalSessions": "Total Sessions",
     "series": "series workout",
     "fromLibrary": "From Library",
@@ -64,7 +64,7 @@
   "language": { "toggle": "עברית" },
   "login": {
     "enterTrainerName": "Enter trainer name",
-    "enterClientName": "Enter client name"
+    "enterClientName": "Enter trainee name"
   },
   "days": {
     "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat"
@@ -77,7 +77,7 @@
   "history": {
     "title": "Stats",
     "myProgress": "My Progress",
-    "selectClient": "Select Client",
+    "selectClient": "Select Trainee",
     "totalSessions": "Total Sessions",
     "totalVolume": "Total Volume",
     "activeWeeks": "Active Weeks",
@@ -94,6 +94,47 @@
     "needMoreData": "Complete more sessions to see charts",
     "searchExercises": "Search exercises...",
     "sessionLog": "Session History"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "templates": "Exercise Templates",
+    "programs": "Programs",
+    "workoutLogs": "Workout Logs",
+    "totalClients": "Trainees",
+    "totalTrainers": "Trainers",
+    "totalPrograms": "Programs",
+    "activePrograms": "Active Programs",
+    "completedSessions": "Completed Sessions",
+    "totalTemplates": "Templates",
+    "searchUsers": "Search users...",
+    "searchTemplates": "Search templates...",
+    "allRoles": "All Roles",
+    "name": "Name",
+    "nameHe": "Name (Hebrew)",
+    "notesHe": "Notes (Hebrew)",
+    "email": "Email",
+    "role": "Role",
+    "trainer": "Trainer",
+    "actions": "Actions",
+    "status": "Status",
+    "created": "Created",
+    "date": "Date",
+    "program": "Program",
+    "noTrainer": "No trainer",
+    "noResults": "No results found",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "addTemplate": "Add Template",
+    "editTemplate": "Edit Template",
+    "inactive": "Inactive",
+    "createUser": "Create User",
+    "sendInvite": "Send Invite",
+    "inviteDesc": "Generate a signup link to share with a new trainer or trainee.",
+    "copyLink": "Copy",
+    "copied": "Copied!",
+    "password": "Password",
+    "assignTrainer": "Assign Trainer",
+    "logout": "Logout"
   },
   "muscle": {
     "Chest": "Chest",

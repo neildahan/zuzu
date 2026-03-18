@@ -16,7 +16,8 @@ export default function Welcome() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'trainer') navigate('/trainer', { replace: true });
+      if (user.role === 'admin') navigate('/admin', { replace: true });
+      else if (user.role === 'trainer') navigate('/trainer', { replace: true });
       else navigate(`/client/${user._id}`, { replace: true });
     }
   }, [user, navigate]);
@@ -38,7 +39,8 @@ export default function Welcome() {
     try {
       const u = await loginApi(form);
       setUser(u);
-      if (u.role === 'trainer') navigate('/trainer', { replace: true });
+      if (u.role === 'admin') navigate('/admin', { replace: true });
+      else if (u.role === 'trainer') navigate('/trainer', { replace: true });
       else navigate(`/client/${u._id}`, { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || (i18n.language === 'he' ? 'אימייל או סיסמה שגויים' : 'Invalid email or password'));

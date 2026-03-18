@@ -17,6 +17,12 @@ import WorkoutDetail from './pages/client/WorkoutDetail';
 import SetLogger from './pages/client/SetLogger';
 import ClientHistory from './pages/client/ClientHistory';
 import Profile from './pages/Profile';
+import AdminShell from './components/layout/AdminShell';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UsersPage from './pages/admin/UsersPage';
+import TemplatesPage from './pages/admin/TemplatesPage';
+import ProgramsPage from './pages/admin/ProgramsPage';
+import WorkoutLogsPage from './pages/admin/WorkoutLogsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +33,13 @@ const queryClient = new QueryClient({
 function ProtectedRoute({ children }) {
   const { user } = useUser();
   if (!user) return <Navigate to="/" replace />;
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { user } = useUser();
+  if (!user) return <Navigate to="/" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
   return children;
 }
 
@@ -59,6 +72,14 @@ function AppRoutes() {
         <Route path="/client/:cid/workout/:wid" element={<WorkoutDetail />} />
         <Route path="/client/:cid/workout/:wid/exercise/:eid" element={<SetLogger />} />
         <Route path="/client/:cid/history" element={<ClientHistory />} />
+      </Route>
+      {/* Admin routes */}
+      <Route element={<AdminRoute><AdminShell /></AdminRoute>}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UsersPage />} />
+        <Route path="/admin/templates" element={<TemplatesPage />} />
+        <Route path="/admin/programs" element={<ProgramsPage />} />
+        <Route path="/admin/logs" element={<WorkoutLogsPage />} />
       </Route>
     </Routes>
     </>

@@ -1,6 +1,6 @@
 {
   "app": { "title": "זוזו" },
-  "roles": { "trainer": "מאמן", "client": "מתאמן", "pickRole": "בחר תפקיד" },
+  "roles": { "trainer": "מאמן", "client": "מתאמן/ת", "admin": "מנהל", "pickRole": "בחר תפקיד" },
   "common": {
     "save": "שמור", "cancel": "ביטול", "delete": "מחק", "edit": "ערוך",
     "add": "הוסף", "back": "חזרה", "loading": "טוען...",
@@ -8,7 +8,7 @@
     "seeAll": "הצג הכל", "total": "סה\"כ", "inProgress": "בתהליך"
   },
   "trainer": {
-    "myClients": "הלקוחות שלי",
+    "myClients": "המתאמנים שלי",
     "newProgram": "תוכנית חדשה",
     "editProgram": "עריכת תוכנית",
     "programName": "שם התוכנית",
@@ -29,14 +29,14 @@
     "restAfterExercise": "מנוחה אחרי תרגיל (שניות)",
     "videoUrl": "קישור לסרטון",
     "notes": "הערות",
-    "clientLogs": "יומני לקוח",
-    "noClients": "אין לקוחות עדיין",
+    "clientLogs": "יומני מתאמן",
+    "noClients": "אין מתאמנים עדיין",
     "noPrograms": "אין תוכניות עדיין",
-    "addClient": "הוסף לקוח",
-    "clientName": "שם הלקוח",
+    "addClient": "הוסף מתאמן",
+    "clientName": "שם המתאמן",
     "programs": "תוכניות",
     "active": "פעיל",
-    "noAvailableClients": "אין לקוחות זמינים",
+    "noAvailableClients": "אין מתאמנים זמינים",
     "totalSessions": "סה\"כ אימונים",
     "series": "סדרת אימונים",
     "fromLibrary": "מהספרייה",
@@ -64,7 +64,7 @@
   "language": { "toggle": "English" },
   "login": {
     "enterTrainerName": "הכנס שם מאמן",
-    "enterClientName": "הכנס שם מתאמן"
+    "enterClientName": "הכנס שם מתאמן/ת"
   },
   "days": {
     "0": "ראשון", "1": "שני", "2": "שלישי", "3": "רביעי", "4": "חמישי", "5": "שישי", "6": "שבת"
@@ -77,7 +77,7 @@
   "history": {
     "title": "סטטיסטיקה",
     "myProgress": "ההתקדמות שלי",
-    "selectClient": "בחר לקוח",
+    "selectClient": "בחר מתאמן/ת",
     "totalSessions": "סה\"כ אימונים",
     "totalVolume": "נפח כולל",
     "activeWeeks": "שבועות פעילים",
@@ -94,6 +94,47 @@
     "needMoreData": "השלם עוד אימונים כדי לראות גרפים",
     "searchExercises": "חיפוש תרגילים...",
     "sessionLog": "היסטוריית אימונים"
+  },
+  "admin": {
+    "dashboard": "לוח בקרה",
+    "users": "משתמשים",
+    "templates": "ספריית תרגילים",
+    "programs": "תוכניות",
+    "workoutLogs": "יומני אימונים",
+    "totalClients": "מתאמנים/ות",
+    "totalTrainers": "מאמנים",
+    "totalPrograms": "תוכניות",
+    "activePrograms": "תוכניות פעילות",
+    "completedSessions": "אימונים שהושלמו",
+    "totalTemplates": "תבניות",
+    "searchUsers": "חיפוש משתמשים...",
+    "searchTemplates": "חיפוש תבניות...",
+    "allRoles": "כל התפקידים",
+    "name": "שם",
+    "nameHe": "שם (עברית)",
+    "notesHe": "הערות (עברית)",
+    "email": "אימייל",
+    "role": "תפקיד",
+    "trainer": "מאמן",
+    "actions": "פעולות",
+    "status": "סטטוס",
+    "created": "נוצר",
+    "date": "תאריך",
+    "program": "תוכנית",
+    "noTrainer": "ללא מאמן/ת",
+    "noResults": "לא נמצאו תוצאות",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק?",
+    "addTemplate": "הוסף תבנית",
+    "editTemplate": "ערוך תבנית",
+    "inactive": "לא פעיל",
+    "createUser": "צור משתמש",
+    "sendInvite": "שלח הזמנה",
+    "inviteDesc": "צור קישור הרשמה לשיתוף עם מאמן או מתאמן חדש.",
+    "copyLink": "העתק",
+    "copied": "הועתק!",
+    "password": "סיסמה",
+    "assignTrainer": "שייך מאמן",
+    "logout": "התנתק"
   },
   "muscle": {
     "Chest": "חזה",

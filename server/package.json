@@ -4,6 +4,7 @@
   "description": "Zuzu gym trainer-client workout platform backend",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed": "node src/seed.js"
   },

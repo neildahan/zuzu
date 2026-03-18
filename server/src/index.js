@@ -2,10 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static frontend in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
+}
 
 // Mount routes
 app.use('/api/auth', require('./routes/auth'));
@@ -17,6 +23,13 @@ app.use('/api/workouts', require('./routes/workoutsDirect'));
 app.use('/api/workouts/:workoutId/exercises', require('./routes/exercises'));
 app.use('/api/exercises', require('./routes/exercisesDirect'));
 app.use('/api/workout-logs', require('./routes/workoutLogs'));
+
+// SPA fallback — serve index.html for non-API routes in production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+  });
+}
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {

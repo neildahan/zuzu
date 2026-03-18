@@ -5,8 +5,6 @@
       <stop offset="100%" stop-color="#111"/>
     </linearGradient>
   </defs>
-  <!-- Rounded background -->
   <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <!-- Z letter -->
-  <path d="M14 16h36v10H28l22 12v10H14V38h22L14 26z" fill="#F97316"/>
+  <path d="M14 16h36v10H22l28 12v10H14V38h28L14 26z" fill="#F97316"/>
 </svg>

@@ -137,6 +137,12 @@
     "profile": "Profile",
     "logout": "Logout"
   },
+  "music": {
+    "title": "Gym Music",
+    "subtitle": "Pick a vibe and start training",
+    "nowPlaying": "Now Playing",
+    "playing": "Playing"
+  },
   "muscle": {
     "Chest": "Chest",
     "Back": "Back",

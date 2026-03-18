@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['Rubik', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       colors: {
         accent: {

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    font-family: 'Outfit', 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
     @apply bg-gray-50 text-black antialiased text-base font-semibold;
     -webkit-text-size-adjust: 100%;
     touch-action: manipulation;

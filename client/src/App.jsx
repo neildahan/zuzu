@@ -17,6 +17,7 @@ import WorkoutDetail from './pages/client/WorkoutDetail';
 import SetLogger from './pages/client/SetLogger';
 import ClientHistory from './pages/client/ClientHistory';
 import Profile from './pages/Profile';
+import MusicPlayer from './pages/MusicPlayer';
 import AdminShell from './components/layout/AdminShell';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UsersPage from './pages/admin/UsersPage';
@@ -62,6 +63,7 @@ function AppRoutes() {
       {/* Protected app routes */}
       <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
         <Route path="/profile" element={<Profile />} />
+        <Route path="/music" element={<MusicPlayer />} />
         <Route path="/trainer" element={<Dashboard />} />
         <Route path="/trainer/program/new" element={<ProgramBuilder />} />
         <Route path="/trainer/program/:id" element={<ProgramEditor />} />

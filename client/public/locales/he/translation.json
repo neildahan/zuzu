@@ -137,6 +137,12 @@
     "profile": "פרופיל",
     "logout": "התנתק"
   },
+  "music": {
+    "title": "מוזיקה לאימון",
+    "subtitle": "בחר אווירה והתחל להתאמן",
+    "nowPlaying": "מתנגן עכשיו",
+    "playing": "מתנגן"
+  },
   "muscle": {
     "Chest": "חזה",
     "Back": "גב",

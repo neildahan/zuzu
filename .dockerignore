@@ -6,3 +6,4 @@ client/dist
 .env
 *.md
 .dockerignore
+Dockerfile

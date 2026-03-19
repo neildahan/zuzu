@@ -45,7 +45,11 @@
     "searchExercises": "Search exercises...",
     "exerciseAdded": "Exercise added",
     "exerciseUpdated": "Exercise updated",
-    "exerciseDeleted": "Exercise deleted"
+    "exerciseDeleted": "Exercise deleted",
+    "dropHere": "Drop here",
+    "duplicate": "Duplicate",
+    "workoutDuplicated": "Workout duplicated",
+    "workoutDeleted": "Workout deleted"
   },
   "client": {
     "myWorkouts": "My Workouts",

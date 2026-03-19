@@ -7,9 +7,10 @@ import toast from 'react-hot-toast';
 import { getExerciseTemplates } from '../../api/exerciseTemplates';
 import { useState, useRef, useEffect } from 'react';
 import { GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Core', 'Full Body'];
 
@@ -95,20 +96,32 @@ export default function ExerciseEditor() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercises', wid] }),
   });
 
+  const [activeId, setActiveId] = useState(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
   );
 
+  const handleDragStart = (event) => setActiveId(event.active.id);
+
   const handleDragEnd = (event) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const sorted = [...(exercises || [])].sort((a, b) => a.order - b.order);
     const oldIndex = sorted.findIndex(e => e._id === active.id);
     const newIndex = sorted.findIndex(e => e._id === over.id);
     const reordered = arrayMove(sorted, oldIndex, newIndex);
+    // Optimistic update — set new order in cache instantly
+    queryClient.setQueryData(['exercises', wid], reordered.map((e, i) => ({ ...e, order: i })));
     reorderMut.mutate(reordered.map(e => e._id));
   };
+
+  const handleDragCancel = () => setActiveId(null);
+
+  const sortedExercises = [...(exercises || [])].sort((a, b) => a.order - b.order);
+  const activeExercise = activeId ? sortedExercises.find(e => e._id === activeId) : null;
 
   const resetForm = () => {
     setShowForm(false);
@@ -233,10 +246,17 @@ export default function ExerciseEditor() {
       </div>
 
       {/* Exercise list */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={(exercises || []).sort((a, b) => a.order - b.order).map(e => e._id)} strategy={verticalListSortingStrategy}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        modifiers={[restrictToVerticalAxis]}
+      >
+        <SortableContext items={sortedExercises.map(e => e._id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
-            {exercises?.sort((a, b) => a.order - b.order).map((ex, i) => (
+            {sortedExercises.map((ex, i) => (
               editingId === ex._id ? (
                 <InlineEditForm
                   key={ex._id}
@@ -259,11 +279,17 @@ export default function ExerciseEditor() {
                   isHe={i18n.language === 'he'}
                   onEdit={handleEdit}
                   onDelete={(id) => deleteMut.mutate(id)}
+                  isDraggedOver={activeId && activeId !== ex._id}
                 />
               )
             ))}
           </div>
         </SortableContext>
+        <DragOverlay dropAnimation={{ duration: 150, easing: 'ease' }}>
+          {activeExercise ? (
+            <DragOverlayCard ex={activeExercise} t={t} isHe={i18n.language === 'he'} />
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       {/* Add form (new exercise only — edits are inline above) */}
@@ -546,84 +572,114 @@ function SortableExerciseCard({ ex, index, t, isHe, onEdit, onDelete }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : undefined,
-    opacity: isDragging ? 0.9 : 1,
   };
 
+  if (isDragging) {
+    return (
+      <div ref={setNodeRef} style={style} className="rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 h-20 flex items-center justify-center">
+        <span className="text-xs font-bold text-accent/50">{t('trainer.dropHere') || 'Drop here'}</span>
+      </div>
+    );
+  }
+
   return (
-    <div ref={setNodeRef} style={style} className={`rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden ${isDragging ? 'shadow-xl' : ''}`}>
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          {/* Drag handle */}
+    <div ref={setNodeRef} style={style} className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-4">
+        {/* Top row: drag handle + number + name */}
+        <div className="flex items-center gap-2.5">
           <button
             {...attributes}
             {...listeners}
-            className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing touch-none"
+            className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing touch-none"
           >
-            <GripVertical size={18} className="text-gray-400" />
+            <GripVertical size={16} className="text-gray-400" />
           </button>
-          {/* Number badge */}
-          <div className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center font-extrabold text-xs shrink-0">
             {index + 1}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <span className="font-bold text-lg text-gray-900">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
-                {isHe && ex.nameHe && <span className="block text-[11px] text-gray-400 font-medium">{ex.name}</span>}
-              </div>
-              <div className="flex gap-1">
-                {ex.videoUrl && (
-                  <a
-                    href={ex.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-9 h-9 rounded-xl bg-accent/10 hover:bg-accent/20 flex items-center justify-center transition-colors"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#F97316" stroke="none">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </a>
-                )}
-                <button
-                  onClick={() => onEdit(ex)}
-                  className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-accent/10 flex items-center justify-center transition-colors"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button
-                  onClick={() => onDelete(ex._id)}
-                  className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-red-50 flex items-center justify-center transition-colors"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {ex.muscleGroup && (
-                <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
-                  {t('muscle.' + ex.muscleGroup)}
-                </span>
-              )}
-              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                {ex.targets.sets} {t('trainer.sets')}
-              </span>
-              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                {ex.targets.repsMin}{ex.targets.repsMax ? `-${ex.targets.repsMax}` : ''} {t('client.reps')}
-              </span>
-              {ex.targets.weight && (
-                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-accent/10 text-accent">
-                  {ex.targets.weight}kg
-                </span>
-              )}
-              {ex.targets.rir != null && (
-                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-500">
-                  RIR {ex.targets.rir}
-                </span>
-              )}
-            </div>
+            <span className="font-bold text-gray-900 block truncate">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
+            {isHe && ex.nameHe && <span className="text-[11px] text-gray-400 font-medium block truncate">{ex.name}</span>}
           </div>
+        </div>
+
+        {/* Pills row */}
+        <div className="flex flex-wrap gap-1.5 mt-2.5">
+          {ex.muscleGroup && (
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
+              {t('muscle.' + ex.muscleGroup)}
+            </span>
+          )}
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+            {ex.targets.sets}×{ex.targets.repsMin}{ex.targets.repsMax ? `-${ex.targets.repsMax}` : ''}
+          </span>
+          {ex.targets.weight && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+              {ex.targets.weight}kg
+            </span>
+          )}
+          {ex.targets.rir != null && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-500">
+              RIR {ex.targets.rir}
+            </span>
+          )}
+        </div>
+
+        {/* Action buttons row */}
+        <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-gray-100">
+          <button
+            onClick={() => onEdit(ex)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-bold transition-colors"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            {t('common.edit')}
+          </button>
+          {ex.videoUrl && (
+            <a
+              href={ex.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 text-xs font-bold transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
+              Video
+            </a>
+          )}
+          <div className="flex-1" />
+          <button
+            onClick={() => onDelete(ex._id)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-500 text-xs font-bold transition-colors"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            {t('common.delete')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DragOverlayCard({ ex, t, isHe }) {
+  return (
+    <div className="rounded-2xl bg-white shadow-2xl shadow-black/20 border-2 border-accent ring-4 ring-accent/20 overflow-hidden rotate-[1deg] scale-[1.02]">
+      <div className="p-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
+            <GripVertical size={16} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="font-bold text-gray-900 block truncate">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {ex.muscleGroup && (
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
+              {t('muscle.' + ex.muscleGroup)}
+            </span>
+          )}
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+            {ex.targets.sets}×{ex.targets.repsMin}{ex.targets.repsMax ? `-${ex.targets.repsMax}` : ''}
+          </span>
         </div>
       </div>
     </div>

@@ -2,22 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProgram, updateProgram, deleteProgram } from '../../api/programs';
-import { getWorkouts, createWorkout, deleteWorkout } from '../../api/workouts';
+import { getWorkouts, createWorkout, deleteWorkout, duplicateWorkout } from '../../api/workouts';
 import { useState } from 'react';
+import { Copy, Trash2 } from 'lucide-react';
+import { useSwipeable } from 'react-swipeable';
+import toast from 'react-hot-toast';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-const TYPE_COLORS = {
-  strength: 'bg-accent/10 text-accent border-accent/20',
-  cardio: 'bg-blue-50 text-blue-500 border-blue-100',
-  hybrid: 'bg-purple-50 text-purple-500 border-purple-100',
-};
-
-const TYPE_STRIP = {
-  strength: 'bg-accent',
-  cardio: 'bg-blue-500',
-  hybrid: 'bg-purple-500',
-};
 
 export default function ProgramEditor() {
   const { t, i18n } = useTranslation();
@@ -52,7 +43,17 @@ export default function ProgramEditor() {
     mutationFn: (workoutId) => deleteWorkout(workoutId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', id] });
+      toast.success(t('trainer.workoutDeleted') || 'Workout deleted');
     },
+  });
+
+  const duplicateMut = useMutation({
+    mutationFn: (workoutId) => duplicateWorkout(workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workouts', id] });
+      toast.success(t('trainer.workoutDuplicated') || 'Workout duplicated');
+    },
+    onError: () => toast.error(t('admin.actionFailed') || 'Failed'),
   });
 
   const updateProgramMut = useMutation({
@@ -282,40 +283,19 @@ export default function ProgramEditor() {
       {/* Workout cards */}
       <div className="space-y-3">
         {workouts?.sort((a, b) => a.order - b.order).map(workout => (
-          <div key={workout._id} className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
-            <div className="flex">
-              <div className={`w-1.5 ${TYPE_STRIP[workout.type] || 'bg-gray-300'}`} />
-              <Link
-                to={`/trainer/program/${id}/workout/${workout._id}`}
-                className="flex-1 p-5 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-bold text-lg text-gray-900">{workout.name}</span>
-                    <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                      {t('days.' + workout.dayOfWeek)}
-                    </span>
-                    <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${TYPE_COLORS[workout.type] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                      {t('workoutType.' + workout.type)}
-                    </span>
-                  </div>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180 shrink-0"><polyline points="9 18 15 12 9 6" /></svg>
-                </div>
-              </Link>
-              {showEditProgram && (
-                <button
-                  onClick={() => {
-                    if (confirm(i18n.language === 'he' ? `למחוק את ${workout.name}?` : `Delete ${workout.name}?`)) {
-                      deleteWorkoutMut.mutate(workout._id);
-                    }
-                  }}
-                  className="px-4 flex items-center justify-center hover:bg-red-50 transition-colors border-s border-gray-100"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
-              )}
-            </div>
-          </div>
+          <WorkoutCard
+            key={workout._id}
+            workout={workout}
+            programId={id}
+            t={t}
+            i18n={i18n}
+            onDuplicate={() => duplicateMut.mutate(workout._id)}
+            onDelete={() => {
+              if (confirm(i18n.language === 'he' ? `למחוק את ${workout.name}?` : `Delete ${workout.name}?`)) {
+                deleteWorkoutMut.mutate(workout._id);
+              }
+            }}
+          />
         ))}
       </div>
 
@@ -376,6 +356,81 @@ export default function ProgramEditor() {
           + {t('trainer.addWorkout')}
         </button>
       )}
+    </div>
+  );
+}
+
+const TYPE_STRIP = {
+  strength: 'bg-accent',
+  cardio: 'bg-blue-500',
+  hybrid: 'bg-purple-500',
+};
+
+const TYPE_COLORS_CARD = {
+  strength: 'bg-accent/10 text-accent border-accent/20',
+  cardio: 'bg-blue-50 text-blue-500 border-blue-100',
+  hybrid: 'bg-purple-50 text-purple-500 border-purple-100',
+};
+
+function WorkoutCard({ workout, programId, t, i18n, onDuplicate, onDelete }) {
+  const [open, setOpen] = useState(false);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => setOpen(true),
+    onSwipedRight: () => setOpen(false),
+    trackMouse: false,
+    preventScrollOnSwipe: true,
+    delta: 30,
+  });
+
+  return (
+    <div {...handlers}>
+      <div className="rounded-2xl bg-white shadow-sm border border-gray-100">
+        <div className="flex">
+          <div className={`w-1.5 rounded-s-2xl ${TYPE_STRIP[workout.type] || 'bg-gray-300'}`} />
+          <Link
+            to={`/trainer/program/${programId}/workout/${workout._id}`}
+            onClick={(e) => { if (open) { e.preventDefault(); setOpen(false); } }}
+            className="flex-1 p-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <span className="font-bold text-lg text-gray-900">{workout.name}</span>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                    {t('days.' + workout.dayOfWeek)}
+                  </span>
+                  <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${TYPE_COLORS_CARD[workout.type] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                    {t('workoutType.' + workout.type)}
+                  </span>
+                </div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180 shrink-0"><polyline points="9 18 15 12 9 6" /></svg>
+            </div>
+          </Link>
+        </div>
+
+        {/* Action row — slides open */}
+        <div className={`overflow-hidden transition-all duration-200 ease-out ${open ? 'max-h-14' : 'max-h-0'}`}>
+          <div className="flex border-t border-gray-100">
+            <button
+              onClick={() => { onDuplicate(); setOpen(false); }}
+              className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <Copy size={15} />
+              {t('trainer.duplicate')}
+            </button>
+            <div className="w-px bg-gray-100" />
+            <button
+              onClick={() => { onDelete(); setOpen(false); }}
+              className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 size={15} />
+              {t('common.delete')}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

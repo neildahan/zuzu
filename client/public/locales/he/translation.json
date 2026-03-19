@@ -45,7 +45,11 @@
     "searchExercises": "חיפוש תרגילים...",
     "exerciseAdded": "תרגיל נוסף",
     "exerciseUpdated": "תרגיל עודכן",
-    "exerciseDeleted": "תרגיל נמחק"
+    "exerciseDeleted": "תרגיל נמחק",
+    "dropHere": "שחרר כאן",
+    "duplicate": "שכפל",
+    "workoutDuplicated": "האימון שוכפל",
+    "workoutDeleted": "האימון נמחק"
   },
   "client": {
     "myWorkouts": "האימונים שלי",

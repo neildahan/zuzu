@@ -221,6 +221,7 @@ export default function ExerciseEditor() {
                 ex={ex}
                 index={i}
                 t={t}
+                isHe={i18n.language === 'he'}
                 onEdit={handleEdit}
                 onDelete={(id) => deleteMut.mutate(id)}
               />
@@ -491,7 +492,7 @@ export default function ExerciseEditor() {
   );
 }
 
-function SortableExerciseCard({ ex, index, t, onEdit, onDelete }) {
+function SortableExerciseCard({ ex, index, t, isHe, onEdit, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ex._id });
 
   const style = {
@@ -519,7 +520,10 @@ function SortableExerciseCard({ ex, index, t, onEdit, onDelete }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-lg text-gray-900">{ex.name}</span>
+              <div className="min-w-0">
+                <span className="font-bold text-lg text-gray-900">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
+                {isHe && ex.nameHe && <span className="block text-[11px] text-gray-400 font-medium">{ex.name}</span>}
+              </div>
               <div className="flex gap-1">
                 {ex.videoUrl && (
                   <a

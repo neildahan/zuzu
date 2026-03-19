@@ -112,7 +112,10 @@ export default function WorkoutDetail() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-gray-900 truncate">{i18n.language === 'he' && ex.nameHe ? ex.nameHe : ex.name}</span>
+                    <div className="min-w-0">
+                      <span className="font-bold text-gray-900 truncate block">{i18n.language === 'he' && ex.nameHe ? ex.nameHe : ex.name}</span>
+                      {i18n.language === 'he' && ex.nameHe && <span className="text-[11px] text-gray-400 font-medium truncate block">{ex.name}</span>}
+                    </div>
                     {/* Video button */}
                     {ex.videoUrl && (
                       <a

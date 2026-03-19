@@ -212,7 +212,10 @@ export default function SetLogger() {
       {/* Exercise header card */}
       <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-extrabold">{i18n.language === 'he' && exercise.nameHe ? exercise.nameHe : exercise.name}</h2>
+          <div>
+            <h2 className="text-2xl font-extrabold">{i18n.language === 'he' && exercise.nameHe ? exercise.nameHe : exercise.name}</h2>
+            {i18n.language === 'he' && exercise.nameHe && <p className="text-sm text-gray-400 font-medium mt-0.5">{exercise.name}</p>}
+          </div>
           {exercise.videoUrl && (
             <a
               href={exercise.videoUrl}

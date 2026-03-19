@@ -121,9 +121,11 @@ export default function ExerciseEditor() {
   const handleEdit = (ex) => {
     setForm({
       name: ex.name,
+      nameHe: ex.nameHe || '',
       muscleGroup: ex.muscleGroup || '',
       videoUrl: ex.videoUrl || '',
       notes: ex.notes || '',
+      order: ex.order,
       targets: { ...emptyExercise.targets, ...ex.targets },
     });
     setEditingId(ex._id);
@@ -156,7 +158,7 @@ export default function ExerciseEditor() {
         restBetweenSets: Number(form.targets.restBetweenSets),
         restAfterExercise: Number(form.targets.restAfterExercise),
       },
-      order: exercises?.length || 0,
+      order: editingId ? form.order : (exercises?.length || 0),
     };
     if (editingId) {
       updateMut.mutate({ id: editingId, data });
@@ -235,36 +237,64 @@ export default function ExerciseEditor() {
         <SortableContext items={(exercises || []).sort((a, b) => a.order - b.order).map(e => e._id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {exercises?.sort((a, b) => a.order - b.order).map((ex, i) => (
-              <SortableExerciseCard
-                key={ex._id}
-                ex={ex}
-                index={i}
-                t={t}
-                isHe={i18n.language === 'he'}
-                onEdit={handleEdit}
-                onDelete={(id) => deleteMut.mutate(id)}
-              />
+              editingId === ex._id ? (
+                <InlineEditForm
+                  key={ex._id}
+                  form={form}
+                  setForm={setForm}
+                  errors={errors}
+                  setErrors={setErrors}
+                  onSubmit={handleSubmit}
+                  onCancel={resetForm}
+                  t={t}
+                  isHe={i18n.language === 'he'}
+                  isPending={updateMut.isPending}
+                />
+              ) : (
+                <SortableExerciseCard
+                  key={ex._id}
+                  ex={ex}
+                  index={i}
+                  t={t}
+                  isHe={i18n.language === 'he'}
+                  onEdit={handleEdit}
+                  onDelete={(id) => deleteMut.mutate(id)}
+                />
+              )
             ))}
           </div>
         </SortableContext>
       </DndContext>
 
-      {/* Add/Edit form */}
-      {showForm ? (
+      {/* Add form (new exercise only — edits are inline above) */}
+      {showForm && !editingId ? (
         <form onSubmit={handleSubmit} className="p-5 rounded-2xl bg-white shadow-sm border border-gray-100 space-y-4">
           <h3 className="font-bold text-gray-900">{editingId ? t('common.edit') : t('trainer.addExercise')}</h3>
 
           <div>
-            <label className={`block text-sm font-bold mb-1.5 ${errors.name ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.exerciseName')} *</label>
+            <label className={`block text-sm font-bold mb-1.5 ${errors.name ? 'text-red-500' : 'text-gray-500'}`}>{i18n.language === 'he' ? 'שם באנגלית' : t('trainer.exerciseName')} *</label>
             <input
               type="text"
               value={form.name}
               onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: false })); }}
-              placeholder={t('trainer.exerciseName')}
+              placeholder="Exercise name (English)"
               className={`w-full p-4 rounded-2xl bg-white border ${errors.name ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`}
               autoFocus
             />
           </div>
+
+          {i18n.language === 'he' && (
+            <div>
+              <label className="block text-sm font-bold mb-1.5 text-gray-500">שם בעברית</label>
+              <input
+                type="text"
+                value={form.nameHe || ''}
+                onChange={e => setForm(f => ({ ...f, nameHe: e.target.value }))}
+                placeholder="שם התרגיל בעברית"
+                className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+              />
+            </div>
+          )}
 
           <div>
             <label className={`block text-sm font-bold mb-1.5 ${errors.muscleGroup ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.muscleGroup')} *</label>
@@ -597,5 +627,108 @@ function SortableExerciseCard({ ex, index, t, isHe, onEdit, onDelete }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function InlineEditForm({ form, setForm, errors, setErrors, onSubmit, onCancel, t, isHe, isPending }) {
+  const setTarget = (key, value) => setForm(f => ({ ...f, targets: { ...f.targets, [key]: value } }));
+
+  return (
+    <form onSubmit={onSubmit} className="p-5 rounded-2xl bg-white shadow-sm border-2 border-accent/30 space-y-4">
+      <h3 className="font-bold text-gray-900">{t('common.edit')}</h3>
+
+      <div>
+        <label className={`block text-sm font-bold mb-1.5 ${errors.name ? 'text-red-500' : 'text-gray-500'}`}>{isHe ? 'שם באנגלית' : t('trainer.exerciseName')} *</label>
+        <input
+          type="text"
+          value={form.name}
+          onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: false })); }}
+          placeholder="Exercise name (English)"
+          className={`w-full p-4 rounded-2xl bg-white border ${errors.name ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`}
+          autoFocus
+        />
+      </div>
+
+      {isHe && (
+        <div>
+          <label className="block text-sm font-bold mb-1.5 text-gray-500">שם בעברית</label>
+          <input
+            type="text"
+            value={form.nameHe || ''}
+            onChange={e => setForm(f => ({ ...f, nameHe: e.target.value }))}
+            placeholder="שם התרגיל בעברית"
+            className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+          />
+        </div>
+      )}
+
+      <div>
+        <label className={`block text-sm font-bold mb-1.5 ${errors.muscleGroup ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.muscleGroup')} *</label>
+        <select
+          value={form.muscleGroup}
+          onChange={e => { setForm(f => ({ ...f, muscleGroup: e.target.value })); setErrors(er => ({ ...er, muscleGroup: false })); }}
+          className={`w-full p-4 rounded-2xl bg-white border ${errors.muscleGroup ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`}
+        >
+          <option value="">{t('trainer.muscleGroup')}</option>
+          {['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Core', 'Full Body'].map(g => <option key={g} value={g}>{t('muscle.' + g)}</option>)}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={`block text-sm font-bold mb-1.5 ${errors.sets ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.sets')} *</label>
+          <input type="number" value={form.targets.sets} onChange={e => { setTarget('sets', e.target.value); setErrors(er => ({ ...er, sets: false })); }}
+            className={`w-full p-4 rounded-2xl bg-white border ${errors.sets ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`} />
+        </div>
+        <div>
+          <label className={`block text-sm font-bold mb-1.5 ${errors.repsMin ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.repsMin')} *</label>
+          <input type="number" value={form.targets.repsMin} onChange={e => { setTarget('repsMin', e.target.value); setErrors(er => ({ ...er, repsMin: false })); }}
+            className={`w-full p-4 rounded-2xl bg-white border ${errors.repsMin ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`} />
+        </div>
+        <div>
+          <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.repsMax')}</label>
+          <input type="number" value={form.targets.repsMax} onChange={e => setTarget('repsMax', e.target.value)}
+            className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+        </div>
+        <div>
+          <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.weight')}</label>
+          <input type="number" value={form.targets.weight} onChange={e => setTarget('weight', e.target.value)}
+            className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+        </div>
+        <div>
+          <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.rir')}</label>
+          <input type="number" value={form.targets.rir} onChange={e => setTarget('rir', e.target.value)}
+            className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+        </div>
+        <div>
+          <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.restBetweenSets')}</label>
+          <input type="number" value={form.targets.restBetweenSets} onChange={e => setTarget('restBetweenSets', e.target.value)}
+            className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.videoUrl')}</label>
+        <input type="url" value={form.videoUrl} onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
+          placeholder={t('trainer.videoUrl')}
+          className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-bold mb-1.5 text-gray-500">{t('trainer.notes')}</label>
+        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          placeholder={t('trainer.notes')}
+          className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" rows={2} />
+      </div>
+
+      <div className="flex gap-2">
+        <button type="submit" disabled={isPending} className="flex-1 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30">
+          {t('common.save')}
+        </button>
+        <button type="button" onClick={onCancel} className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold transition-colors">
+          {t('common.cancel')}
+        </button>
+      </div>
+    </form>
   );
 }

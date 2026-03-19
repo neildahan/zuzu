@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getWorkout } from '../../api/workouts';
+import { getWorkout, updateWorkout } from '../../api/workouts';
 import { getExercises, createExercise, updateExercise, deleteExercise, reorderExercises } from '../../api/exercises';
 import toast from 'react-hot-toast';
 import { getExerciseTemplates } from '../../api/exerciseTemplates';
 import { useState, useRef, useEffect } from 'react';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Pencil } from 'lucide-react';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -45,6 +45,8 @@ export default function ExerciseEditor() {
   const [libraryFilter, setLibraryFilter] = useState('All');
   const [librarySearch, setLibrarySearch] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [editingWorkout, setEditingWorkout] = useState(false);
+  const [workoutForm, setWorkoutForm] = useState({ name: '', dayOfWeek: 0, type: 'strength' });
   const [form, setForm] = useState(emptyExercise);
   const [errors, setErrors] = useState({});
   const filterScrollRef = useRef(null);
@@ -95,6 +97,21 @@ export default function ExerciseEditor() {
     mutationFn: (orderedIds) => reorderExercises(wid, orderedIds),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercises', wid] }),
   });
+
+  const updateWorkoutMut = useMutation({
+    mutationFn: (data) => updateWorkout(wid, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', wid] });
+      setEditingWorkout(false);
+      toast.success(t('trainer.workoutUpdated') || 'Workout updated');
+    },
+    onError: () => toast.error(t('admin.actionFailed') || 'Failed'),
+  });
+
+  const handleEditWorkout = () => {
+    setWorkoutForm({ name: workout.name, dayOfWeek: workout.dayOfWeek, type: workout.type });
+    setEditingWorkout(true);
+  };
 
   const [activeId, setActiveId] = useState(null);
 
@@ -234,16 +251,89 @@ export default function ExerciseEditor() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 text-white">
-        <span className="text-[11px] font-bold text-accent uppercase tracking-widest">{t('trainer.exercises')}</span>
-        <h2 className="text-2xl font-extrabold mt-1">{workout.name}</h2>
-        <div className="flex gap-6 mt-3">
+      {editingWorkout ? (
+        <div className="rounded-3xl bg-white border-2 border-accent/30 p-5 space-y-4">
+          <h3 className="font-bold text-gray-900">{t('common.edit')}</h3>
           <div>
-            <span className="text-2xl font-extrabold">{exercises?.length || 0}</span>
-            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.exercises')}</p>
+            <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.workoutName')}</label>
+            <input
+              type="text"
+              value={workoutForm.name}
+              onChange={(e) => setWorkoutForm(f => ({ ...f, name: e.target.value }))}
+              className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+              autoFocus
+            />
+          </div>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('common.day')}</label>
+              <select
+                value={workoutForm.dayOfWeek}
+                onChange={(e) => setWorkoutForm(f => ({ ...f, dayOfWeek: Number(e.target.value) }))}
+                className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+              >
+                {[0,1,2,3,4,5,6].map(i => <option key={i} value={i}>{t('days.' + i)}</option>)}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('workoutType.strength')}</label>
+              <select
+                value={workoutForm.type}
+                onChange={(e) => setWorkoutForm(f => ({ ...f, type: e.target.value }))}
+                className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+              >
+                <option value="strength">{t('workoutType.strength')}</option>
+                <option value="cardio">{t('workoutType.cardio')}</option>
+                <option value="hybrid">{t('workoutType.hybrid')}</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => updateWorkoutMut.mutate(workoutForm)}
+              disabled={updateWorkoutMut.isPending || !workoutForm.name.trim()}
+              className="flex-1 p-4 rounded-2xl bg-accent text-white font-bold disabled:opacity-50"
+            >
+              {t('common.save')}
+            </button>
+            <button
+              onClick={() => setEditingWorkout(false)}
+              className="p-4 rounded-2xl bg-gray-100 text-gray-600 font-bold"
+            >
+              {t('common.cancel')}
+            </button>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 text-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[11px] font-bold text-accent uppercase tracking-widest">{t('trainer.exercises')}</span>
+              <h2 className="text-2xl font-extrabold mt-1">{workout.name}</h2>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">
+                  {t('days.' + workout.dayOfWeek)}
+                </span>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300">
+                  {t('workoutType.' + workout.type)}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleEditWorkout}
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <Pencil size={16} className="text-white" />
+            </button>
+          </div>
+          <div className="flex gap-6 mt-4">
+            <div>
+              <span className="text-2xl font-extrabold">{exercises?.length || 0}</span>
+              <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{t('trainer.exercises')}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Exercise list */}
       <DndContext

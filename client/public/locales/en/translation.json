@@ -49,7 +49,8 @@
     "dropHere": "Drop here",
     "duplicate": "Duplicate",
     "workoutDuplicated": "Workout duplicated",
-    "workoutDeleted": "Workout deleted"
+    "workoutDeleted": "Workout deleted",
+    "workoutUpdated": "Workout updated"
   },
   "client": {
     "myWorkouts": "My Workouts",

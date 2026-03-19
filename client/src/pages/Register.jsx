@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { register } from '../api/auth';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import zuzuLogo from '../assets/zuzu_logo.png';
 
 export default function Register() {
@@ -27,9 +28,13 @@ export default function Register() {
     } catch (err) {
       const msg = err.response?.data?.error;
       if (msg === 'Email already registered') {
-        setError(i18n.language === 'he' ? 'אימייל כבר רשום' : 'Email already registered');
+        const errMsg = i18n.language === 'he' ? 'אימייל כבר רשום' : 'Email already registered';
+        setError(errMsg);
+        toast.error(errMsg);
       } else {
-        setError(msg || (i18n.language === 'he' ? 'שגיאה בהרשמה' : 'Registration failed'));
+        const errMsg = msg || (i18n.language === 'he' ? 'שגיאה בהרשמה' : 'Registration failed');
+        setError(errMsg);
+        toast.error(errMsg);
       }
     } finally {
       setLoading(false);

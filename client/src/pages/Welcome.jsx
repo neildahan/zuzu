@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { login as loginApi } from '../api/auth';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import zuzuLogo from '../assets/zuzu_logo.png';
 
 export default function Welcome() {
@@ -43,7 +44,9 @@ export default function Welcome() {
       else if (u.role === 'trainer') navigate('/trainer', { replace: true });
       else navigate(`/client/${u._id}`, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || (i18n.language === 'he' ? 'אימייל או סיסמה שגויים' : 'Invalid email or password'));
+      const msg = err.response?.data?.error || (i18n.language === 'he' ? 'אימייל או סיסמה שגויים' : 'Invalid email or password');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

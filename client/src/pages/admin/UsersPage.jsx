@@ -6,6 +6,7 @@ import { register } from '../../api/auth';
 import { getUsers } from '../../api/users';
 import Dropdown from '../../components/admin/Dropdown';
 import { UserPlus, Send, Copy, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function UsersPage() {
   const { t } = useTranslation();
@@ -28,7 +29,8 @@ export default function UsersPage() {
 
   const deleteMut = useMutation({
     mutationFn: deleteAdminUser,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin'] }); toast.success(t('admin.userDeleted')); },
+    onError: () => toast.error(t('admin.actionFailed')),
   });
 
   const updateMut = useMutation({
@@ -36,7 +38,9 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin'] });
       setEditUser(null);
+      toast.success(t('admin.userUpdated'));
     },
+    onError: () => toast.error(t('admin.actionFailed')),
   });
 
   const createMut = useMutation({
@@ -44,7 +48,9 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin'] });
       setShowCreate(false);
+      toast.success(t('admin.userCreated'));
     },
+    onError: (err) => toast.error(err.response?.data?.error || t('admin.actionFailed')),
   });
 
   const users = data?.users || [];

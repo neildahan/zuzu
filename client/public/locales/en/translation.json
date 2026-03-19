@@ -42,7 +42,10 @@
     "fromLibrary": "From Library",
     "createCustom": "Create Custom",
     "exerciseLibrary": "Exercise Library",
-    "searchExercises": "Search exercises..."
+    "searchExercises": "Search exercises...",
+    "exerciseAdded": "Exercise added",
+    "exerciseUpdated": "Exercise updated",
+    "exerciseDeleted": "Exercise deleted"
   },
   "client": {
     "myWorkouts": "My Workouts",
@@ -134,6 +137,14 @@
     "copied": "Copied!",
     "password": "Password",
     "assignTrainer": "Assign Trainer",
+    "userCreated": "User created",
+    "userUpdated": "User updated",
+    "userDeleted": "User deleted",
+    "templateCreated": "Template created",
+    "templateUpdated": "Template updated",
+    "templateDeleted": "Template deleted",
+    "fillRequired": "Please fill required fields",
+    "actionFailed": "Something went wrong",
     "profile": "Profile",
     "logout": "Logout"
   },

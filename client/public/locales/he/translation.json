@@ -42,7 +42,10 @@
     "fromLibrary": "מהספרייה",
     "createCustom": "יצירה ידנית",
     "exerciseLibrary": "ספריית תרגילים",
-    "searchExercises": "חיפוש תרגילים..."
+    "searchExercises": "חיפוש תרגילים...",
+    "exerciseAdded": "תרגיל נוסף",
+    "exerciseUpdated": "תרגיל עודכן",
+    "exerciseDeleted": "תרגיל נמחק"
   },
   "client": {
     "myWorkouts": "האימונים שלי",
@@ -134,6 +137,14 @@
     "copied": "הועתק!",
     "password": "סיסמה",
     "assignTrainer": "שייך מאמן",
+    "userCreated": "משתמש נוצר",
+    "userUpdated": "משתמש עודכן",
+    "userDeleted": "משתמש נמחק",
+    "templateCreated": "תבנית נוצרה",
+    "templateUpdated": "תבנית עודכנה",
+    "templateDeleted": "תבנית נמחקה",
+    "fillRequired": "נא למלא שדות חובה",
+    "actionFailed": "משהו השתבש",
     "profile": "פרופיל",
     "logout": "התנתק"
   },

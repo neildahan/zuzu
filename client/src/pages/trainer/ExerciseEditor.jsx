@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkout } from '../../api/workouts';
 import { getExercises, createExercise, updateExercise, deleteExercise, reorderExercises } from '../../api/exercises';
+import toast from 'react-hot-toast';
 import { getExerciseTemplates } from '../../api/exerciseTemplates';
 import { useState, useRef, useEffect } from 'react';
 import { GripVertical } from 'lucide-react';
@@ -44,6 +45,7 @@ export default function ExerciseEditor() {
   const [librarySearch, setLibrarySearch] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyExercise);
+  const [errors, setErrors] = useState({});
   const filterScrollRef = useRef(null);
 
   const { data: workout } = useQuery({
@@ -67,7 +69,9 @@ export default function ExerciseEditor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises', wid] });
       resetForm();
+      toast.success(t('trainer.exerciseAdded') || 'Exercise added');
     },
+    onError: () => toast.error(t('admin.actionFailed') || 'Failed'),
   });
 
   const updateMut = useMutation({
@@ -75,12 +79,15 @@ export default function ExerciseEditor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises', wid] });
       resetForm();
+      toast.success(t('trainer.exerciseUpdated') || 'Exercise updated');
     },
+    onError: () => toast.error(t('admin.actionFailed') || 'Failed'),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => deleteExercise(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercises', wid] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['exercises', wid] }); toast.success(t('trainer.exerciseDeleted') || 'Exercise deleted'); },
+    onError: () => toast.error(t('admin.actionFailed') || 'Failed'),
   });
 
   const reorderMut = useMutation({
@@ -108,6 +115,7 @@ export default function ExerciseEditor() {
     setShowAddChoice(false);
     setEditingId(null);
     setForm(emptyExercise);
+    setErrors({});
   };
 
   const handleEdit = (ex) => {
@@ -125,6 +133,17 @@ export default function ExerciseEditor() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = true;
+    if (!form.muscleGroup) newErrors.muscleGroup = true;
+    if (!form.targets.sets || Number(form.targets.sets) < 1) newErrors.sets = true;
+    if (!form.targets.repsMin || Number(form.targets.repsMin) < 1) newErrors.repsMin = true;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error(t('admin.fillRequired') || 'Please fill required fields');
+      return;
+    }
+    setErrors({});
     const data = {
       ...form,
       targets: {
@@ -236,24 +255,23 @@ export default function ExerciseEditor() {
           <h3 className="font-bold text-gray-900">{editingId ? t('common.edit') : t('trainer.addExercise')}</h3>
 
           <div>
-            <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.exerciseName')}</label>
+            <label className={`block text-sm font-bold mb-1.5 ${errors.name ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.exerciseName')} *</label>
             <input
               type="text"
               value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: false })); }}
               placeholder={t('trainer.exerciseName')}
-              className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
-              required
+              className={`w-full p-4 rounded-2xl bg-white border ${errors.name ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`}
               autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.muscleGroup')}</label>
+            <label className={`block text-sm font-bold mb-1.5 ${errors.muscleGroup ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.muscleGroup')} *</label>
             <select
               value={form.muscleGroup}
-              onChange={e => setForm(f => ({ ...f, muscleGroup: e.target.value }))}
-              className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium"
+              onChange={e => { setForm(f => ({ ...f, muscleGroup: e.target.value })); setErrors(er => ({ ...er, muscleGroup: false })); }}
+              className={`w-full p-4 rounded-2xl bg-white border ${errors.muscleGroup ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`}
             >
               <option value="">{t('trainer.muscleGroup')}</option>
               {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{t('muscle.' + g)}</option>)}
@@ -262,14 +280,14 @@ export default function ExerciseEditor() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.sets')}</label>
-              <input type="number" value={form.targets.sets} onChange={e => setTarget('sets', e.target.value)}
-                className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+              <label className={`block text-sm font-bold mb-1.5 ${errors.sets ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.sets')} *</label>
+              <input type="number" value={form.targets.sets} onChange={e => { setTarget('sets', e.target.value); setErrors(er => ({ ...er, sets: false })); }}
+                className={`w-full p-4 rounded-2xl bg-white border ${errors.sets ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`} />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.repsMin')}</label>
-              <input type="number" value={form.targets.repsMin} onChange={e => setTarget('repsMin', e.target.value)}
-                className="w-full p-4 rounded-2xl bg-white border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium" />
+              <label className={`block text-sm font-bold mb-1.5 ${errors.repsMin ? 'text-red-500' : 'text-gray-500'}`}>{t('trainer.repsMin')} *</label>
+              <input type="number" value={form.targets.repsMin} onChange={e => { setTarget('repsMin', e.target.value); setErrors(er => ({ ...er, repsMin: false })); }}
+                className={`w-full p-4 rounded-2xl bg-white border ${errors.repsMin ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200'} focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none font-medium`} />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('trainer.repsMax')}</label>

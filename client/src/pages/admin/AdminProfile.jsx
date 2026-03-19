@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useUser } from '../../context/UserContext';
 import { updateUser } from '../../api/users';
 import { Settings } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminProfile() {
   const { t, i18n } = useTranslation();
@@ -27,8 +28,9 @@ export default function AdminProfile() {
       setUser(updated);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      toast.success(isHe ? 'הפרופיל עודכן' : 'Profile updated');
     } catch (err) {
-      console.error(err);
+      toast.error(isHe ? 'שגיאה בשמירה' : 'Failed to save');
     } finally {
       setSaving(false);
     }

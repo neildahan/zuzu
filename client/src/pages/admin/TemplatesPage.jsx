@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getExerciseTemplates } from '../../api/exerciseTemplates';
 import { createExerciseTemplate, updateExerciseTemplate, deleteExerciseTemplate } from '../../api/admin';
 import Dropdown from '../../components/admin/Dropdown';
+import toast from 'react-hot-toast';
 
 const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Core', 'Full Body'];
 
@@ -22,7 +23,8 @@ export default function TemplatesPage() {
 
   const deleteMut = useMutation({
     mutationFn: deleteExerciseTemplate,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercise-templates'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['exercise-templates'] }); toast.success(t('admin.templateDeleted')); },
+    onError: () => toast.error(t('admin.actionFailed')),
   });
 
   const createMut = useMutation({
@@ -30,7 +32,9 @@ export default function TemplatesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-templates'] });
       setShowAdd(false);
+      toast.success(t('admin.templateCreated'));
     },
+    onError: () => toast.error(t('admin.actionFailed')),
   });
 
   const updateMut = useMutation({
@@ -38,7 +42,9 @@ export default function TemplatesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-templates'] });
       setEditTemplate(null);
+      toast.success(t('admin.templateUpdated'));
     },
+    onError: () => toast.error(t('admin.actionFailed')),
   });
 
   const q = search.toLowerCase();

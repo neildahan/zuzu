@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkout } from '../../api/workouts';
 import { getExercises } from '../../api/exercises';
+import { useWorkoutSession } from '../../components/WorkoutTimer';
+import { Play, Dumbbell } from 'lucide-react';
 
 const TYPE_COLORS = {
   strength: 'bg-accent/10 text-accent',
@@ -29,6 +31,8 @@ export default function WorkoutDetail() {
   const { t, i18n } = useTranslation();
   const { wid } = useParams();
   const { user } = useUser();
+  const navigate = useNavigate();
+  const { session, startSession } = useWorkoutSession();
 
   const { data: workout } = useQuery({
     queryKey: ['workout', wid],
@@ -77,13 +81,26 @@ export default function WorkoutDetail() {
           {/* Action buttons */}
           <div className="flex gap-3 mt-6">
             {exercises?.length > 0 && (
-              <Link
-                to={`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`}
-                className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
-              >
-                {t('client.startWorkout')}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-              </Link>
+              session?.workoutId === wid ? (
+                <Link
+                  to={`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`}
+                  className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-emerald-500 text-white font-bold transition-colors shadow-lg shadow-emerald-500/30"
+                >
+                  <Dumbbell size={18} />
+                  {t('client.continueWorkout')}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    startSession(wid, workout.programId, workout.weekNumber || 1);
+                    navigate(`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
+                >
+                  <Play size={18} />
+                  {t('client.startWorkout')}
+                </button>
+              )
             )}
           </div>
         </div>

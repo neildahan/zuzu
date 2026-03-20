@@ -65,6 +65,13 @@
     "addSet": "Add Set",
     "upcoming": "Upcoming",
     "today": "Today",
+    "continueWorkout": "Continue Workout",
+    "endWorkout": "End Workout",
+    "endWorkoutConfirm": "End this workout?",
+    "workoutDuration": "Duration",
+    "workoutCompleted": "Workout completed!",
+    "viewWorkouts": "View Workouts",
+    "training": "Training",
     "noWorkouts": "No workouts assigned",
     "noExercises": "No exercises yet"
   },

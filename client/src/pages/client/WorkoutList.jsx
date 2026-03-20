@@ -39,15 +39,6 @@ export default function WorkoutList() {
     enabled: !!program,
   });
 
-  if (!program) return (
-    <div className="p-12 rounded-3xl bg-white shadow-sm border border-gray-100 text-center">
-      <div className="w-16 h-16 rounded-full bg-gray-100 mx-auto flex items-center justify-center mb-3">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><path d="M6.5 6.5h11M6.5 17.5h11M3 10.5v3M21 10.5v3M5 8v8M19 8v8M7 6v12M17 6v12" /></svg>
-      </div>
-      <p className="text-gray-400 font-medium">{t('client.noWorkouts')}</p>
-    </div>
-  );
-
   const exerciseQueries = useQueries({
     queries: (workouts || []).map(w => ({
       queryKey: ['exercises', w._id],
@@ -58,6 +49,15 @@ export default function WorkoutList() {
   (workouts || []).forEach((w, i) => {
     exerciseCounts[w._id] = exerciseQueries[i]?.data?.length;
   });
+
+  if (!program) return (
+    <div className="p-12 rounded-3xl bg-white shadow-sm border border-gray-100 text-center">
+      <div className="w-16 h-16 rounded-full bg-gray-100 mx-auto flex items-center justify-center mb-3">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><path d="M6.5 6.5h11M6.5 17.5h11M3 10.5v3M21 10.5v3M5 8v8M19 8v8M7 6v12M17 6v12" /></svg>
+      </div>
+      <p className="text-gray-400 font-medium">{t('client.noWorkouts')}</p>
+    </div>
+  );
 
   const weeks = Array.from({ length: program.weekCount }, (_, i) => i + 1);
 

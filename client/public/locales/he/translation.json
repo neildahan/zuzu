@@ -65,6 +65,13 @@
     "addSet": "הוסף סט",
     "upcoming": "אימונים קרובים",
     "today": "היום",
+    "continueWorkout": "המשך אימון",
+    "endWorkout": "סיים אימון",
+    "endWorkoutConfirm": "לסיים את האימון?",
+    "workoutDuration": "משך",
+    "workoutCompleted": "האימון הושלם!",
+    "viewWorkouts": "צפה באימונים",
+    "training": "מתאמן",
     "noWorkouts": "אין אימונים",
     "noExercises": "אין תרגילים עדיין"
   },

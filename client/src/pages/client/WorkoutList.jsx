@@ -9,6 +9,16 @@ import { useState } from 'react';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+function getNextDate(dayOfWeek) {
+  const today = new Date();
+  const todayDay = today.getDay();
+  let diff = dayOfWeek - todayDay;
+  if (diff < 0) diff += 7;
+  const next = new Date(today);
+  next.setDate(today.getDate() + diff);
+  return next;
+}
+
 const TYPE_COLORS = {
   strength: 'bg-accent/10 text-accent',
   cardio: 'bg-blue-50 text-blue-500',
@@ -105,7 +115,7 @@ export default function WorkoutList() {
 
       {/* Workout cards */}
       <div className="space-y-3">
-        {workouts?.sort((a, b) => a.order - b.order).map(workout => (
+        {[...(workouts || [])].sort((a, b) => getNextDate(a.dayOfWeek) - getNextDate(b.dayOfWeek)).map(workout => (
           <Link
             key={workout._id}
             to={`/client/${user._id}/workout/${workout._id}`}

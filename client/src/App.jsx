@@ -16,6 +16,7 @@ import WorkoutList from './pages/client/WorkoutList';
 import WorkoutDetail from './pages/client/WorkoutDetail';
 import SetLogger from './pages/client/SetLogger';
 import ClientHistory from './pages/client/ClientHistory';
+import WorkoutSession from './pages/client/WorkoutSession';
 import Profile from './pages/Profile';
 import MusicPlayer from './pages/MusicPlayer';
 import AdminShell from './components/layout/AdminShell';
@@ -47,7 +48,12 @@ function AdminRoute({ children }) {
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
@@ -76,6 +82,9 @@ function AppRoutes() {
         <Route path="/client/:cid/workout/:wid/exercise/:eid" element={<SetLogger />} />
         <Route path="/client/:cid/history" element={<ClientHistory />} />
       </Route>
+      {/* Workout session - standalone, no AppShell */}
+      <Route path="/client/:cid/workout/:wid/session" element={<ProtectedRoute><WorkoutSession /></ProtectedRoute>} />
+
       {/* Admin routes */}
       <Route element={<AdminRoute><AdminShell /></AdminRoute>}>
         <Route path="/admin" element={<AdminDashboard />} />

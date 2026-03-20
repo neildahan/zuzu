@@ -24,7 +24,14 @@ export default function TopBar() {
     navigate('/');
   };
 
-  const isHome = location.pathname === '/trainer' || /^\/client\/[^/]+$/.test(location.pathname);
+  const path = location.pathname;
+  const isHome = path === '/trainer' || /^\/client\/[^/]+$/.test(path);
+  const isNavPage = isHome
+    || /^\/client\/[^/]+\/workouts$/.test(path)
+    || /^\/client\/[^/]+\/history$/.test(path)
+    || path === '/trainer/history'
+    || path === '/music'
+    || path === '/profile';
 
   if (isHome && user) {
     const today = new Date();
@@ -75,6 +82,9 @@ export default function TopBar() {
       </header>
     );
   }
+
+  // Nav pages: no back button, just a minimal spacer
+  if (isNavPage) return null;
 
   // Sub-page: clean white bar with back
   return (

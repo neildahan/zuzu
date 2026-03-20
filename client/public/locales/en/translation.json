@@ -71,6 +71,15 @@
     "workoutDuration": "Duration",
     "workoutCompleted": "Workout completed!",
     "viewWorkouts": "View Workouts",
+    "nextExercise": "Next",
+    "finishWorkout": "Finish",
+    "workoutSummary": "Workout Summary",
+    "saveAndFinish": "Save & Finish",
+    "keepGoing": "Keep Going",
+    "target": "Target",
+    "skipRest": "Skip Rest",
+    "resting": "Rest",
+    "paused": "Paused",
     "training": "Training",
     "noWorkouts": "No workouts assigned",
     "noExercises": "No exercises yet"
@@ -108,6 +117,8 @@
     "byMuscleGroup": "By Muscle Group",
     "needMoreData": "Complete more sessions to see charts",
     "searchExercises": "Search exercises...",
+    "progress": "Progress",
+    "workoutLog": "Workout Log",
     "sessionLog": "Session History"
   },
   "admin": {

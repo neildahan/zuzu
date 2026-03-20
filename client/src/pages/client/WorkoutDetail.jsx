@@ -83,7 +83,7 @@ export default function WorkoutDetail() {
             {exercises?.length > 0 && (
               session?.workoutId === wid ? (
                 <Link
-                  to={`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`}
+                  to={`/client/${user._id}/workout/${wid}/session`}
                   className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-emerald-500 text-white font-bold transition-colors shadow-lg shadow-emerald-500/30"
                 >
                   <Dumbbell size={18} />
@@ -93,7 +93,7 @@ export default function WorkoutDetail() {
                 <button
                   onClick={() => {
                     startSession(wid, workout.programId, workout.weekNumber || 1);
-                    navigate(`/client/${user._id}/workout/${wid}/exercise/${exercises[0]._id}`);
+                    navigate(`/client/${user._id}/workout/${wid}/session`);
                   }}
                   className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white font-bold transition-colors shadow-lg shadow-accent/30"
                 >
@@ -118,13 +118,11 @@ export default function WorkoutDetail() {
           </div>
           <div className="space-y-3">
             {exercises.sort((a, b) => a.order - b.order).map((ex, i) => (
-              <Link
+              <div
                 key={ex._id}
-                to={`/client/${user._id}/workout/${wid}/exercise/${ex._id}`}
-                className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-all active:scale-[0.98]"
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-gray-100"
               >
-                {/* Exercise number badge */}
-                <div className="w-12 h-12 rounded-xl bg-gray-900 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -133,46 +131,24 @@ export default function WorkoutDetail() {
                       <span className="font-bold text-gray-900 truncate block">{i18n.language === 'he' && ex.nameHe ? ex.nameHe : ex.name}</span>
                       {i18n.language === 'he' && ex.nameHe && <span className="text-[11px] text-gray-400 font-medium truncate block">{ex.name}</span>}
                     </div>
-                    {/* Video button */}
-                    {ex.videoUrl && (
-                      <a
-                        href={ex.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-8 h-8 rounded-lg bg-accent/10 hover:bg-accent/20 flex items-center justify-center transition-colors shrink-0 ml-2"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#F97316" stroke="none">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </a>
-                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-1.5">
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {ex.muscleGroup && (
-                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${MUSCLE_COLORS[ex.muscleGroup] || 'bg-gray-100 text-gray-500'}`}>
                         {t('muscle.' + ex.muscleGroup)}
                       </span>
                     )}
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                      {ex.targets.sets} x {ex.targets.repsMin}{ex.targets.repsMax ? `-${ex.targets.repsMax}` : ''}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                      {ex.targets.sets}×{ex.targets.repsMin}{ex.targets.repsMax ? `-${ex.targets.repsMax}` : ''}
                     </span>
                     {ex.targets.weight && (
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
                         {ex.targets.weight}kg
-                      </span>
-                    )}
-                    {ex.targets.rir != null && (
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-500">
-                        RIR {ex.targets.rir}
                       </span>
                     )}
                   </div>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 rtl:rotate-180">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

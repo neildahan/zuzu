@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkoutLogs, createWorkoutLog, updateWorkoutLog } from '../api/workoutLogs';
+import { getWorkout } from '../api/workouts';
+import { getExercises } from '../api/exercises';
 import { Timer, Square } from 'lucide-react';
+import WorkoutSummarySheet from './WorkoutSummarySheet';
 import toast from 'react-hot-toast';
 
 const STORAGE_KEY = 'zuzu-active-workout';
@@ -48,12 +51,25 @@ export function useWorkoutSession() {
 }
 
 export function WorkoutTimerBar({ userId }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { session, endSession } = useWorkoutSession();
   const [elapsed, setElapsed] = useState(0);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+
+  // Fetch log + exercise data for summary
+  const { data: logData } = useQuery({
+    queryKey: ['workout-logs', { clientId: userId, workoutId: session?.workoutId }],
+    queryFn: () => getWorkoutLogs({ clientId: userId, workoutId: session?.workoutId }),
+    enabled: !!session,
+  });
+
+  const { data: exercisesList } = useQuery({
+    queryKey: ['exercises', session?.workoutId],
+    queryFn: () => getExercises(session?.workoutId),
+    enabled: !!session,
+  });
 
   useEffect(() => {
     if (!session) return;
@@ -65,13 +81,12 @@ export function WorkoutTimerBar({ userId }) {
 
   const endMut = useMutation({
     mutationFn: async () => {
-      // Find or create the workout log, then mark as completed
       const logs = await getWorkoutLogs({ clientId: userId, workoutId: session.workoutId });
       const log = logs?.[0];
       if (log) {
         await updateWorkoutLog(log._id, { isCompleted: true });
       } else {
-        const newLog = await createWorkoutLog({
+        await createWorkoutLog({
           clientId: userId,
           workoutId: session.workoutId,
           programId: session.programId,
@@ -97,12 +112,24 @@ export function WorkoutTimerBar({ userId }) {
   const hrs = Math.floor(mins / 60);
   const displayMins = mins % 60;
 
+  // Build exerciseLogs format from log data for the shared summary sheet
+  const log = logData?.find(l => !l.isCompleted) || logData?.[0];
+  const summaryExercises = (exercisesList || []).sort((a, b) => a.order - b.order);
+  const summaryLogs = {};
+  summaryExercises.forEach(ex => {
+    const logEx = log?.exercises?.find(e => e.exerciseId === ex._id);
+    summaryLogs[ex._id] = logEx?.sets || [];
+  });
+
   return (
     <>
       {/* Floating timer bar */}
-      <div className="fixed top-0 inset-x-0 z-[60] bg-gray-900/95 backdrop-blur-sm safe-area-top">
+      <div className="fixed top-0 inset-x-0 z-[60] bg-gray-900/95 backdrop-blur-sm">
         <div className="max-w-lg mx-auto flex items-center justify-between px-4 py-2.5">
-          <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate(`/client/${userId}/workout/${session.workoutId}/session`)}
+            className="flex items-center gap-2.5"
+          >
             <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
               <Timer size={16} className="text-accent" />
             </div>
@@ -115,9 +142,9 @@ export function WorkoutTimerBar({ userId }) {
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('client.training')}</span>
               </div>
             </div>
-          </div>
+          </button>
           <button
-            onClick={() => setShowConfirm(true)}
+            onClick={() => setShowSummary(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm active:scale-95 transition-transform"
           >
             <Square size={14} fill="currentColor" />
@@ -126,36 +153,19 @@ export function WorkoutTimerBar({ userId }) {
         </div>
       </div>
 
-      {/* Spacer so content isn't hidden behind the bar */}
+      {/* Spacer */}
       <div className="h-14" />
 
-      {/* Confirm dialog */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60" onClick={() => setShowConfirm(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-center">{t('client.endWorkoutConfirm')}</h3>
-            <p className="text-sm text-gray-500 text-center">
-              {t('client.workoutDuration')}: <span className="font-bold text-gray-900">
-                {hrs > 0 && `${hrs}h `}{displayMins}m {secs}s
-              </span>
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => endMut.mutate()}
-                disabled={endMut.isPending}
-                className="flex-1 py-3 rounded-xl bg-accent text-white font-bold text-sm disabled:opacity-50"
-              >
-                {endMut.isPending ? '...' : t('client.endWorkout')}
-              </button>
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold text-sm"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Summary sheet */}
+      {showSummary && summaryExercises.length > 0 && (
+        <WorkoutSummarySheet
+          exercises={summaryExercises}
+          exerciseLogs={summaryLogs}
+          elapsed={elapsed}
+          onFinish={() => endMut.mutate()}
+          onKeepGoing={() => setShowSummary(false)}
+          isPending={endMut.isPending}
+        />
       )}
     </>
   );

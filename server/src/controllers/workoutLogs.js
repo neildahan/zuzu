@@ -60,7 +60,8 @@ exports.history = async (req, res) => {
       .populate({
         path: 'exercises.exerciseId',
         select: 'name nameHe muscleGroup',
-      });
+      })
+      .populate('workoutId', 'name type');
     res.json(logs);
   } catch (err) {
     res.status(500).json({ error: err.message });

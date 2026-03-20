@@ -78,6 +78,16 @@ exports.getById = async (req, res) => {
   }
 };
 
+exports.remove = async (req, res) => {
+  try {
+    const log = await WorkoutLog.findByIdAndDelete(req.params.id);
+    if (!log) return res.status(404).json({ error: 'Workout log not found' });
+    res.json({ message: 'Workout log deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.update = async (req, res) => {
   try {
     const log = await WorkoutLog.findByIdAndUpdate(req.params.id, req.body, { new: true });

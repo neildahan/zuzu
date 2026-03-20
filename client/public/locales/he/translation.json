@@ -119,6 +119,11 @@
     "searchExercises": "חיפוש תרגילים...",
     "progress": "התקדמות",
     "workoutLog": "יומן אימונים",
+    "addWorkout": "הוסף אימון",
+    "workoutAdded": "האימון נוסף להיסטוריה",
+    "deleteWorkout": "מחק אימון",
+    "confirmDeleteWorkout": "למחוק אימון זה מההיסטוריה? הסטטיסטיקות יעודכנו בהתאם.",
+    "workoutDeleted": "האימון נמחק",
     "sessionLog": "היסטוריית אימונים"
   },
   "admin": {

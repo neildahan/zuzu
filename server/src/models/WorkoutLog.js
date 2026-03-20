@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const workoutLogSchema = new mongoose.Schema(
   {
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout', required: true },
-    programId: { type: mongoose.Schema.Types.ObjectId, ref: 'Program', required: true },
-    weekNumber: { type: Number, required: true },
+    workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout' },
+    programId: { type: mongoose.Schema.Types.ObjectId, ref: 'Program' },
+    weekNumber: { type: Number, default: 1 },
     date: { type: Date, default: Date.now },
     isCompleted: { type: Boolean, default: false },
     exercises: [

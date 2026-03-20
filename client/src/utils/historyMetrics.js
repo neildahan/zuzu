@@ -5,7 +5,8 @@
  * @param {string} exerciseId
  * @returns {Array<{date: string, maxWeight: number}>}
  */
-export function computeWeightProgression(logs, exerciseId) {
+export function computeWeightProgression(logs, exerciseId, locale) {
+  const loc = locale === 'he' ? 'he-IL' : 'en-US';
   const points = [];
   for (const log of logs) {
     const ex = log.exercises.find(
@@ -15,7 +16,7 @@ export function computeWeightProgression(logs, exerciseId) {
     const maxWeight = Math.max(...ex.sets.filter(s => s.isCompleted).map(s => s.weight || 0));
     if (maxWeight > 0) {
       points.push({
-        date: new Date(log.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        date: new Date(log.date).toLocaleDateString(loc, { month: 'short', day: 'numeric' }),
         rawDate: new Date(log.date),
         maxWeight,
       });
@@ -27,7 +28,8 @@ export function computeWeightProgression(logs, exerciseId) {
 /**
  * Compute volume progression: total volume (weight * reps) per session.
  */
-export function computeVolumeProgression(logs, exerciseId) {
+export function computeVolumeProgression(logs, exerciseId, locale) {
+  const loc = locale === 'he' ? 'he-IL' : 'en-US';
   const points = [];
   for (const log of logs) {
     const ex = log.exercises.find(
@@ -39,7 +41,7 @@ export function computeVolumeProgression(logs, exerciseId) {
       .reduce((sum, s) => sum + (s.weight || 0) * (s.reps || 0), 0);
     if (totalVolume > 0) {
       points.push({
-        date: new Date(log.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        date: new Date(log.date).toLocaleDateString(loc, { month: 'short', day: 'numeric' }),
         rawDate: new Date(log.date),
         totalVolume,
       });

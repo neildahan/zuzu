@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import { getExerciseHistory } from '../../api/workoutLogs';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getExerciseHistory, deleteWorkoutLog, createWorkoutLog, updateWorkoutLog } from '../../api/workoutLogs';
+import { getExerciseTemplates } from '../../api/exerciseTemplates';
+import toast from 'react-hot-toast';
+import { Plus, Trash2, Search } from 'lucide-react';
 import {
   computeWeightProgression,
   computeVolumeProgression,
@@ -32,18 +35,8 @@ export default function HistoryContent({ clientId }) {
     );
   }
 
-  if (!logs || logs.length === 0) {
-    return (
-      <div className="p-8 rounded-2xl bg-white shadow-sm border border-gray-100 text-center">
-        <div className="w-16 h-16 rounded-full bg-gray-100 mx-auto flex items-center justify-center mb-3">
-          <BarChart3 size={28} className="text-gray-400" />
-        </div>
-        <p className="text-gray-400 font-medium">{t('history.noHistory')}</p>
-      </div>
-    );
-  }
-
-  const stats = computeSummaryStats(logs);
+  const hasLogs = logs && logs.length > 0;
+  const stats = hasLogs ? computeSummaryStats(logs) : { totalSessions: 0, totalVolume: 0, activeWeeks: 0 };
 
   return (
     <div className="space-y-4">
@@ -84,9 +77,16 @@ export default function HistoryContent({ clientId }) {
       </div>
 
       {tab === 'progress' ? (
-        <ProgressTab logs={logs} t={t} isHe={isHe} />
+        hasLogs ? (
+          <ProgressTab logs={logs} t={t} isHe={isHe} />
+        ) : (
+          <div className="p-8 rounded-2xl bg-white shadow-sm border border-gray-100 text-center">
+            <BarChart3 size={28} className="text-gray-300 mx-auto mb-2" />
+            <p className="text-gray-400 font-medium">{t('history.noHistory')}</p>
+          </div>
+        )
       ) : (
-        <WorkoutLogTab logs={logs} t={t} isHe={isHe} />
+        <WorkoutLogTab logs={logs || []} t={t} isHe={isHe} clientId={clientId} />
       )}
     </div>
   );
@@ -155,15 +155,49 @@ function ProgressTab({ logs, t, isHe }) {
 }
 
 // ── Workout Log Tab ───────────────────────────────────────
-function WorkoutLogTab({ logs, t, isHe }) {
+function WorkoutLogTab({ logs, t, isHe, clientId }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const queryClient = useQueryClient();
   const locale = isHe ? 'he-IL' : 'en-US';
+
+  const deleteMut = useMutation({
+    mutationFn: deleteWorkoutLog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['history', clientId] });
+      toast.success(t('history.workoutDeleted'));
+    },
+    onError: () => toast.error(t('admin.actionFailed')),
+  });
 
   // Reverse to show newest first
   const sorted = [...logs].reverse();
 
   return (
     <div className="space-y-3">
+      {/* Add workout button */}
+      <button
+        onClick={() => setShowAdd(true)}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-accent hover:text-accent font-bold text-sm transition-colors"
+      >
+        <Plus size={16} />
+        {t('history.addWorkout')}
+      </button>
+
+      {showAdd && (
+        <AddManualWorkout
+          clientId={clientId}
+          t={t}
+          isHe={isHe}
+          onClose={() => setShowAdd(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['history', clientId] });
+            setShowAdd(false);
+            toast.success(t('history.workoutAdded'));
+          }}
+        />
+      )}
+
       {sorted.map((log) => {
         const isOpen = expandedId === log._id;
         const workoutName = log.workoutId?.name || t('nav.workouts');
@@ -250,6 +284,22 @@ function WorkoutLogTab({ logs, t, isHe }) {
                     </div>
                   );
                 })}
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(t('history.confirmDeleteWorkout'))) {
+                      deleteMut.mutate(log._id);
+                      setExpandedId(null);
+                    }
+                  }}
+                  disabled={deleteMut.isPending}
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-red-500 hover:bg-red-50 text-xs font-bold transition-colors disabled:opacity-50"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  {t('history.deleteWorkout')}
+                </button>
               </div>
             )}
           </div>
@@ -262,8 +312,8 @@ function WorkoutLogTab({ logs, t, isHe }) {
 // ── Exercise Charts (unchanged) ──────────────────────────
 function ExerciseCharts({ logs, exerciseId }) {
   const { t, i18n } = useTranslation();
-  const weightData = computeWeightProgression(logs, exerciseId);
-  const volumeData = computeVolumeProgression(logs, exerciseId);
+  const weightData = computeWeightProgression(logs, exerciseId, i18n.language);
+  const volumeData = computeVolumeProgression(logs, exerciseId, i18n.language);
   const bestSet = computeBestSet(logs, exerciseId);
 
   const sessions = [];
@@ -330,6 +380,208 @@ function ExerciseCharts({ logs, exerciseId }) {
       {weightData.length <= 1 && (
         <p className="text-sm text-gray-400 text-center py-4">{t('history.needMoreData')}</p>
       )}
+    </div>
+  );
+}
+
+// ── Add Manual Workout ───────────────────────────────────
+function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [exercises, setExercises] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const { data: templates } = useQuery({
+    queryKey: ['exercise-templates'],
+    queryFn: () => getExerciseTemplates(),
+  });
+
+  const addExercise = (template) => {
+    setExercises(prev => [...prev, {
+      id: Date.now(),
+      exerciseId: template._id,
+      name: template.name,
+      nameHe: template.nameHe,
+      sets: [{ setNumber: 1, weight: 0, reps: 8, rir: 2, isCompleted: true }],
+    }]);
+    setShowSearch(false);
+    setSearch('');
+  };
+
+  const updateSet = (exIndex, setIndex, field, value) => {
+    setExercises(prev => prev.map((ex, i) => i === exIndex ? {
+      ...ex,
+      sets: ex.sets.map((s, j) => j === setIndex ? { ...s, [field]: Number(value) } : s),
+    } : ex));
+  };
+
+  const addSet = (exIndex) => {
+    setExercises(prev => prev.map((ex, i) => {
+      if (i !== exIndex) return ex;
+      const last = ex.sets[ex.sets.length - 1];
+      return {
+        ...ex,
+        sets: [...ex.sets, { setNumber: ex.sets.length + 1, weight: last?.weight || 0, reps: last?.reps || 8, rir: 2, isCompleted: true }],
+      };
+    }));
+  };
+
+  const removeExercise = (exIndex) => {
+    setExercises(prev => prev.filter((_, i) => i !== exIndex));
+  };
+
+  const handleSave = async () => {
+    if (exercises.length === 0) return;
+    setSaving(true);
+    try {
+      const log = await createWorkoutLog({
+        clientId,
+        date,
+        isCompleted: true,
+        exercises: exercises.map(ex => ({
+          exerciseId: ex.exerciseId,
+          sets: ex.sets,
+        })),
+      });
+      onSuccess();
+    } catch (err) {
+      toast.error(t('admin.actionFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredTemplates = templates?.filter(tp => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return tp.name.toLowerCase().includes(q) || (tp.nameHe || '').toLowerCase().includes(q);
+  }) || [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60" onClick={onClose}>
+      <div className="bg-white rounded-t-3xl w-full max-w-lg mx-auto flex flex-col" style={{ height: '80vh' }} onClick={e => e.stopPropagation()}>
+        <div className="shrink-0 px-6 pt-6 pb-3 border-b border-gray-100">
+          <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4" />
+          <h3 className="text-xl font-black">{t('history.addWorkout')}</h3>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          {/* Date picker */}
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1.5">{t('admin.date')}</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+
+          {/* Exercise list */}
+          {exercises.map((ex, exIndex) => (
+            <div key={ex.id} className="rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                <div className="min-w-0">
+                  <span className="font-bold text-sm text-gray-900">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
+                  {isHe && ex.nameHe && <span className="block text-[10px] text-gray-400">{ex.name}</span>}
+                </div>
+                <button onClick={() => removeExercise(exIndex)} className="text-red-400 hover:text-red-500">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+
+              {/* Sets */}
+              <div className="px-3 py-2">
+                <div className="grid grid-cols-[32px_1fr_1fr_1fr] gap-1 text-[10px] font-bold text-gray-400 uppercase px-1 mb-1">
+                  <span>#</span>
+                  <span className="text-center">KG</span>
+                  <span className="text-center">{t('client.reps')}</span>
+                  <span className="text-center">RIR</span>
+                </div>
+                {ex.sets.map((set, setIndex) => (
+                  <div key={setIndex} className="grid grid-cols-[32px_1fr_1fr_1fr] gap-1 items-center mb-1">
+                    <span className="text-xs font-bold text-gray-400 text-center">{set.setNumber}</span>
+                    <input type="number" value={set.weight} onChange={e => updateSet(exIndex, setIndex, 'weight', e.target.value)}
+                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                    <input type="number" value={set.reps} onChange={e => updateSet(exIndex, setIndex, 'reps', e.target.value)}
+                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                    <input type="number" value={set.rir} onChange={e => updateSet(exIndex, setIndex, 'rir', e.target.value)}
+                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                  </div>
+                ))}
+                <button
+                  onClick={() => addSet(exIndex)}
+                  className="w-full text-center py-1.5 text-xs font-bold text-gray-400 hover:text-accent transition-colors"
+                >
+                  + {t('client.addSet')}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Add exercise */}
+          {showSearch ? (
+            <div className="rounded-2xl border border-accent/30 overflow-hidden">
+              <div className="relative">
+                <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t('history.searchExercises')}
+                  autoFocus
+                  className="w-full ps-9 pe-4 py-3 text-sm outline-none border-b border-gray-100"
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {filteredTemplates.map(tp => (
+                  <button
+                    key={tp._id}
+                    onClick={() => addExercise(tp)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors text-start"
+                  >
+                    <div>
+                      <span className="font-semibold text-gray-900">{isHe && tp.nameHe ? tp.nameHe : tp.name}</span>
+                      {isHe && tp.nameHe && <span className="block text-[10px] text-gray-400">{tp.name}</span>}
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                      {tp.muscleGroup && t('muscle.' + tp.muscleGroup)}
+                    </span>
+                  </button>
+                ))}
+                {filteredTemplates.length === 0 && (
+                  <p className="text-center py-4 text-sm text-gray-400">{t('admin.noResults')}</p>
+                )}
+              </div>
+              <button onClick={() => { setShowSearch(false); setSearch(''); }}
+                className="w-full py-2 text-xs font-bold text-gray-400 border-t border-gray-100">{t('common.cancel')}</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-accent hover:text-accent font-bold text-sm transition-colors"
+            >
+              <Plus size={16} />
+              {t('trainer.addExercise')}
+            </button>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 bg-white border-t border-gray-100 px-6 pt-4 pb-24 flex gap-3">
+          <button
+            onClick={handleSave}
+            disabled={saving || exercises.length === 0}
+            className="flex-1 py-4 rounded-2xl bg-accent text-white font-bold disabled:opacity-50 text-base"
+          >
+            {saving ? '...' : t('common.save')}
+          </button>
+          <button onClick={onClose} className="py-4 px-6 rounded-2xl bg-gray-100 text-gray-600 font-bold text-base">
+            {t('common.cancel')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

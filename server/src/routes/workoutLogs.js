@@ -6,9 +6,9 @@ const controller = require('../controllers/workoutLogs');
 
 const createLogSchema = z.object({
   clientId: z.string().min(1),
-  workoutId: z.string().min(1),
-  programId: z.string().min(1),
-  weekNumber: z.number(),
+  workoutId: z.string().optional(),
+  programId: z.string().optional(),
+  weekNumber: z.number().optional(),
   date: z.string().optional(),
   isCompleted: z.boolean().optional(),
   exercises: z.array(z.any()).optional(),
@@ -23,5 +23,6 @@ router.get('/previous', controller.previous);
 
 router.get('/:id', controller.getById);
 router.patch('/:id', controller.update);
+router.delete('/:id', controller.remove);
 
 module.exports = router;

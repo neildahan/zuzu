@@ -119,6 +119,11 @@
     "searchExercises": "Search exercises...",
     "progress": "Progress",
     "workoutLog": "Workout Log",
+    "addWorkout": "Add Workout",
+    "workoutAdded": "Workout added to history",
+    "deleteWorkout": "Delete Workout",
+    "confirmDeleteWorkout": "Delete this workout from history? This will update your statistics.",
+    "workoutDeleted": "Workout deleted",
     "sessionLog": "Session History"
   },
   "admin": {

@@ -5,13 +5,17 @@
  * @param {string} exerciseId
  * @returns {Array<{date: string, maxWeight: number}>}
  */
+function matchExercise(ex, exerciseKey) {
+  const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
+  const name = info?.name || ex.name || '';
+  return name.toLowerCase() === exerciseKey;
+}
+
 export function computeWeightProgression(logs, exerciseId, locale) {
   const loc = locale === 'he' ? 'he-IL' : 'en-US';
   const points = [];
   for (const log of logs) {
-    const ex = log.exercises.find(
-      (e) => (e.exerciseId?._id || e.exerciseId)?.toString() === exerciseId
-    );
+    const ex = log.exercises.find(e => matchExercise(e, exerciseId));
     if (!ex) continue;
     const maxWeight = Math.max(...ex.sets.filter(s => s.isCompleted).map(s => s.weight || 0));
     if (maxWeight > 0) {
@@ -32,9 +36,7 @@ export function computeVolumeProgression(logs, exerciseId, locale) {
   const loc = locale === 'he' ? 'he-IL' : 'en-US';
   const points = [];
   for (const log of logs) {
-    const ex = log.exercises.find(
-      (e) => (e.exerciseId?._id || e.exerciseId)?.toString() === exerciseId
-    );
+    const ex = log.exercises.find(e => matchExercise(e, exerciseId));
     if (!ex) continue;
     const totalVolume = ex.sets
       .filter(s => s.isCompleted)
@@ -56,9 +58,7 @@ export function computeVolumeProgression(logs, exerciseId, locale) {
 export function computeBestSet(logs, exerciseId) {
   let best = null;
   for (const log of logs) {
-    const ex = log.exercises.find(
-      (e) => (e.exerciseId?._id || e.exerciseId)?.toString() === exerciseId
-    );
+    const ex = log.exercises.find(e => matchExercise(e, exerciseId));
     if (!ex) continue;
     for (const s of ex.sets.filter(s => s.isCompleted)) {
       const score = (s.weight || 0) * (s.reps || 0);
@@ -77,12 +77,13 @@ export function computeMuscleGroupVolume(logs) {
   const groups = {};
   for (const log of logs) {
     for (const ex of log.exercises) {
-      const info = ex.exerciseId; // populated
-      if (!info || !info.muscleGroup) continue;
+      const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
+      const mg = info?.muscleGroup || ex.muscleGroup;
+      if (!mg) continue;
       const vol = ex.sets
         .filter(s => s.isCompleted)
         .reduce((sum, s) => sum + (s.weight || 0) * (s.reps || 0), 0);
-      groups[info.muscleGroup] = (groups[info.muscleGroup] || 0) + vol;
+      groups[mg] = (groups[mg] || 0) + vol;
     }
   }
   return Object.entries(groups)
@@ -98,19 +99,20 @@ export function extractExercises(logs) {
   const map = new Map();
   for (const log of logs) {
     for (const ex of log.exercises) {
-      const info = ex.exerciseId;
-      if (!info || !info._id) continue;
-      if (!map.has(info._id)) {
-        map.set(info._id, {
-          _id: info._id,
-          name: info.name,
-          nameHe: info.nameHe,
-          muscleGroup: info.muscleGroup,
+      const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
+      const name = info?.name || ex.name;
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, {
+          _id: key,
+          name: name,
+          nameHe: info?.nameHe || ex.nameHe || '',
+          muscleGroup: info?.muscleGroup || ex.muscleGroup || '',
         });
       }
     }
   }
-  // Group by muscle group
   const exercises = Array.from(map.values());
   const grouped = {};
   for (const ex of exercises) {

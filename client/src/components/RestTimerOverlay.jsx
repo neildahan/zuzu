@@ -4,8 +4,10 @@ import { Pause, Play, SkipForward, Plus, Minus } from 'lucide-react';
 
 export default function RestTimerOverlay({ seconds, onComplete, onDismiss }) {
   const { t } = useTranslation();
+  const endTimeRef = useRef(Date.now() + seconds * 1000);
   const [remaining, setRemaining] = useState(seconds);
   const [paused, setPaused] = useState(false);
+  const pausedRemainingRef = useRef(0);
   const intervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
   const total = useRef(seconds);
@@ -16,33 +18,40 @@ export default function RestTimerOverlay({ seconds, onComplete, onDismiss }) {
   const startTimer = () => {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      setRemaining(prev => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current);
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          onCompleteRef.current();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      const now = Date.now();
+      const left = Math.ceil((endTimeRef.current - now) / 1000);
+      if (left <= 0) {
+        clearInterval(intervalRef.current);
+        setRemaining(0);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        onCompleteRef.current();
+      } else {
+        setRemaining(left);
+      }
+    }, 250); // Check more frequently for accuracy
   };
 
   useEffect(() => {
     startTimer();
     return () => clearInterval(intervalRef.current);
-  }, []); // Run once on mount
+  }, []);
 
   const togglePause = () => {
     if (paused) {
+      // Resume: set new end time based on remaining
+      endTimeRef.current = Date.now() + pausedRemainingRef.current * 1000;
       startTimer();
     } else {
+      // Pause: save remaining and stop
+      pausedRemainingRef.current = remaining;
       clearInterval(intervalRef.current);
     }
     setPaused(!paused);
   };
 
   const adjust = (delta) => {
+    endTimeRef.current += delta * 1000;
+    if (paused) pausedRemainingRef.current = Math.max(0, pausedRemainingRef.current + delta);
     setRemaining(prev => {
       const next = Math.max(0, prev + delta);
       total.current = Math.max(total.current, next);

@@ -350,9 +350,11 @@ function ExerciseCharts({ logs, exerciseId }) {
 
   const sessions = [];
   for (const log of logs) {
-    const ex = log.exercises.find(
-      (e) => (e.exerciseId?._id || e.exerciseId)?.toString() === exerciseId
-    );
+    const ex = log.exercises.find((e) => {
+      const info = e.exerciseId && typeof e.exerciseId === 'object' ? e.exerciseId : null;
+      const name = info?.name || e.name || '';
+      return name.toLowerCase() === exerciseId;
+    });
     if (!ex) continue;
     const completedSets = ex.sets.filter(s => s.isCompleted);
     if (completedSets.length === 0) continue;

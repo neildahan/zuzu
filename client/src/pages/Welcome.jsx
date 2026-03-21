@@ -61,8 +61,8 @@ export default function Welcome() {
             {t('language.toggle')}
           </button>
         </div>
-        <img src={zuzuLogo} alt="Zuzu" className="max-h-[60%] object-contain" />
-        <p className="text-gray-400 text-lg font-bold mt-2">
+        <img src={zuzuLogo} alt="Zuzu" className="max-h-[80%] object-contain" />
+        <p className="text-gray-400 text-lg font-bold -mt-4">
           {i18n.language === 'he' ? 'הפלטפורמה שלך לאימונים' : 'Your Workout Platform'}
         </p>
       </div>

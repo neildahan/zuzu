@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getExerciseHistory, deleteWorkoutLog, createWorkoutLog, updateWorkoutLog } from '../../api/workoutLogs';
 import { getExerciseTemplates } from '../../api/exerciseTemplates';
+import { getPrograms } from '../../api/programs';
+import { getWorkouts } from '../../api/workouts';
+import { getExercises as getWorkoutExercises } from '../../api/exercises';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Trash2, Search, ClipboardList as PlanIcon, Dumbbell as LibraryIcon } from 'lucide-react';
 import {
   computeWeightProgression,
   computeVolumeProgression,
@@ -216,7 +219,8 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
 
       {sorted.map((log) => {
         const isOpen = expandedId === log._id;
-        const workoutName = log.workoutId?.name || t('nav.workouts');
+        const isManual = !log.workoutId;
+        const workoutName = isManual ? t('history.manualEntry') : (log.workoutId?.name || t('nav.workouts'));
         const workoutType = log.workoutId?.type;
         const date = new Date(log.date);
         const completedSets = log.exercises.flatMap(e => e.sets).filter(s => s.isCompleted);
@@ -233,6 +237,11 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-gray-900">{workoutName}</span>
+                    {isManual && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-500">
+                        {t('history.manual')}
+                      </span>
+                    )}
                     {workoutType && (
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         workoutType === 'strength' ? 'bg-accent/10 text-accent' :
@@ -442,6 +451,8 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
     });
   });
   const [showSearch, setShowSearch] = useState(false);
+  const [showPlanPicker, setShowPlanPicker] = useState(false);
+  const [showAddChoice, setShowAddChoice] = useState(false);
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -449,6 +460,46 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
     queryKey: ['exercise-templates'],
     queryFn: () => getExerciseTemplates(),
   });
+
+  const { data: programs } = useQuery({
+    queryKey: ['programs', { clientId, active: true }],
+    queryFn: () => getPrograms({ clientId, active: true }),
+    enabled: showPlanPicker,
+  });
+
+  const program = programs?.[0];
+
+  const { data: planWorkouts } = useQuery({
+    queryKey: ['workouts', program?._id],
+    queryFn: () => getWorkouts(program._id),
+    enabled: !!program && showPlanPicker,
+  });
+
+  const loadFromPlan = async (workoutId) => {
+    try {
+      const exs = await getWorkoutExercises(workoutId);
+      const newExercises = exs.sort((a, b) => a.order - b.order).map((ex, i) => ({
+        id: Date.now() + i,
+        exerciseId: ex._id,
+        templateId: ex.templateId || '',
+        name: ex.name,
+        nameHe: ex.nameHe || '',
+        muscleGroup: ex.muscleGroup || '',
+        sets: Array.from({ length: ex.targets?.sets || 3 }, (_, j) => ({
+          setNumber: j + 1,
+          weight: ex.targets?.weight || 0,
+          reps: ex.targets?.repsMin || 8,
+          rir: ex.targets?.rir ?? 2,
+          isCompleted: true,
+        })),
+      }));
+      setExercises(prev => [...prev, ...newExercises]);
+      setShowPlanPicker(false);
+      setShowAddChoice(false);
+    } catch (err) {
+      toast.error(t('admin.actionFailed'));
+    }
+  };
 
   const addExercise = (template) => {
     setExercises(prev => [...prev, {
@@ -592,6 +643,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
           ))}
 
           {/* Add exercise */}
+          {/* Add exercise options */}
           {showSearch ? (
             <div className="rounded-2xl border border-accent/30 overflow-hidden">
               <div className="relative">
@@ -628,9 +680,58 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
               <button onClick={() => { setShowSearch(false); setSearch(''); }}
                 className="w-full py-2 text-xs font-bold text-gray-400 border-t border-gray-100">{t('common.cancel')}</button>
             </div>
+          ) : showPlanPicker ? (
+            <div className="rounded-2xl border border-accent/30 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <span className="text-sm font-bold text-gray-900">{t('history.fromPlan')}</span>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {!planWorkouts ? (
+                  <div className="flex justify-center py-6"><div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>
+                ) : planWorkouts.length === 0 ? (
+                  <p className="text-center py-4 text-sm text-gray-400">{t('admin.noResults')}</p>
+                ) : (
+                  planWorkouts.sort((a, b) => a.dayOfWeek - b.dayOfWeek).map(w => (
+                    <button
+                      key={w._id}
+                      onClick={() => loadFromPlan(w._id)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-start border-b border-gray-50"
+                    >
+                      <div>
+                        <span className="font-semibold text-gray-900">{w.name}</span>
+                        <span className="block text-[10px] text-gray-400">{t('days.' + w.dayOfWeek)}</span>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        w.type === 'strength' ? 'bg-accent/10 text-accent' :
+                        w.type === 'cardio' ? 'bg-blue-50 text-blue-500' : 'bg-purple-50 text-purple-500'
+                      }`}>{t('workoutType.' + w.type)}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button onClick={() => setShowPlanPicker(false)}
+                className="w-full py-2 text-xs font-bold text-gray-400 border-t border-gray-100">{t('common.cancel')}</button>
+            </div>
+          ) : showAddChoice ? (
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowPlanPicker(true); setShowAddChoice(false); }}
+                className="flex-1 flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 border-gray-200 hover:border-accent hover:text-accent text-gray-400 font-bold text-xs transition-colors"
+              >
+                <PlanIcon size={20} />
+                {t('history.fromPlan')}
+              </button>
+              <button
+                onClick={() => { setShowSearch(true); setShowAddChoice(false); }}
+                className="flex-1 flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 border-gray-200 hover:border-accent hover:text-accent text-gray-400 font-bold text-xs transition-colors"
+              >
+                <LibraryIcon size={20} />
+                {t('history.fromLibrary')}
+              </button>
+            </div>
           ) : (
             <button
-              onClick={() => setShowSearch(true)}
+              onClick={() => setShowAddChoice(true)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-accent hover:text-accent font-bold text-sm transition-colors"
             >
               <Plus size={16} />

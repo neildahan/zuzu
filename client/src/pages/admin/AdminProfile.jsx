@@ -25,7 +25,7 @@ export default function AdminProfile() {
         name: form.name,
         locale: form.locale,
       });
-      setUser(updated);
+      setUser({ ...updated, token: user.token });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       toast.success(isHe ? 'הפרופיל עודכן' : 'Profile updated');

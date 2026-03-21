@@ -3,6 +3,7 @@ const router = express.Router();
 const { z } = require('zod');
 const validate = require('../middleware/validate');
 const User = require('../models/User');
+const { generateToken, requireAuth } = require('../middleware/auth');
 
 const registerSchema = z.object({
   name: z.string().min(1),
@@ -27,7 +28,8 @@ router.post('/register', validate(registerSchema), async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
     const user = await User.create(req.validated);
-    res.status(201).json(user);
+    const token = generateToken(user);
+    res.status(201).json({ ...user.toJSON(), token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -45,13 +47,19 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    res.json(user);
+    const token = generateToken(user);
+    res.json({ ...user.toJSON(), token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get current user by ID (for session restore)
+// Get current user (token-based)
+router.get('/me', requireAuth, async (req, res) => {
+  res.json(req.user);
+});
+
+// Legacy: Get current user by ID (for backward compat during migration)
 router.get('/me/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

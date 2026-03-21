@@ -50,7 +50,7 @@ export default function Profile() {
         data.avatarUrl = avatarPreview;
       }
       const updated = await updateUser(user._id, data);
-      setUser(updated);
+      setUser({ ...updated, token: user.token });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       toast.success(isHe ? 'הפרופיל עודכן' : 'Profile updated');

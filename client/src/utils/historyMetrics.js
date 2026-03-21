@@ -7,8 +7,10 @@
  */
 function matchExercise(ex, exerciseKey) {
   const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
-  const name = info?.name || ex.name || '';
-  return name.toLowerCase() === exerciseKey;
+  const name = (info?.name || ex.name || '').toLowerCase().trim();
+  const nameHe = (info?.nameHe || ex.nameHe || '').toLowerCase().trim();
+  const key = exerciseKey.toLowerCase().trim();
+  return name === key || nameHe === key;
 }
 
 export function computeWeightProgression(logs, exerciseId, locale) {
@@ -97,19 +99,39 @@ export function computeMuscleGroupVolume(logs) {
  */
 export function extractExercises(logs) {
   const map = new Map();
+  // Helper to find existing key by name or nameHe
+  const findKey = (name, nameHe) => {
+    const n = (name || '').toLowerCase().trim();
+    const nHe = (nameHe || '').toLowerCase().trim();
+    for (const [key, val] of map) {
+      if (key === n || key === nHe) return key;
+      const valHe = (val.nameHe || '').toLowerCase().trim();
+      const valEn = (val.name || '').toLowerCase().trim();
+      if ((n && (n === valHe || n === valEn)) || (nHe && (nHe === valHe || nHe === valEn))) return key;
+    }
+    return null;
+  };
+
   for (const log of logs) {
     for (const ex of log.exercises) {
       const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
       const name = info?.name || ex.name;
-      if (!name) continue;
-      const key = name.toLowerCase();
-      if (!map.has(key)) {
-        map.set(key, {
-          _id: key,
-          name: name,
-          nameHe: info?.nameHe || ex.nameHe || '',
-          muscleGroup: info?.muscleGroup || ex.muscleGroup || '',
-        });
+      const nameHe = info?.nameHe || ex.nameHe || '';
+      const mg = info?.muscleGroup || ex.muscleGroup || '';
+      if (!name && !nameHe) continue;
+
+      const existingKey = findKey(name, nameHe);
+      if (!existingKey) {
+        const key = (name || nameHe).toLowerCase().trim();
+        map.set(key, { _id: key, name: name || nameHe, nameHe, muscleGroup: mg });
+      } else {
+        // Merge: prefer English name and fill in missing fields
+        const existing = map.get(existingKey);
+        if (name && /^[a-zA-Z]/.test(name) && !/^[a-zA-Z]/.test(existing.name)) {
+          existing.name = name;
+        }
+        if (nameHe && !existing.nameHe) existing.nameHe = nameHe;
+        if (mg && !existing.muscleGroup) existing.muscleGroup = mg;
       }
     }
   }

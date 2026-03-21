@@ -352,8 +352,10 @@ function ExerciseCharts({ logs, exerciseId }) {
   for (const log of logs) {
     const ex = log.exercises.find((e) => {
       const info = e.exerciseId && typeof e.exerciseId === 'object' ? e.exerciseId : null;
-      const name = info?.name || e.name || '';
-      return name.toLowerCase() === exerciseId;
+      const name = (info?.name || e.name || '').toLowerCase().trim();
+      const nameHe = (info?.nameHe || e.nameHe || '').toLowerCase().trim();
+      const key = exerciseId.toLowerCase().trim();
+      return name === key || nameHe === key;
     });
     if (!ex) continue;
     const completedSets = ex.sets.filter(s => s.isCompleted);

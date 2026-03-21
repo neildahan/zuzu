@@ -10,7 +10,10 @@ const workoutLogSchema = new mongoose.Schema(
     isCompleted: { type: Boolean, default: false },
     exercises: [
       {
-        exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise', required: true },
+        exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
+        name: String,
+        nameHe: String,
+        muscleGroup: String,
         sets: [
           {
             setNumber: Number,

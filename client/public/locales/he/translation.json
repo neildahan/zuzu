@@ -121,6 +121,8 @@
     "workoutLog": "יומן אימונים",
     "addWorkout": "הוסף אימון",
     "workoutAdded": "האימון נוסף להיסטוריה",
+    "editWorkout": "ערוך אימון",
+    "workoutUpdated": "האימון עודכן",
     "deleteWorkout": "מחק אימון",
     "confirmDeleteWorkout": "למחוק אימון זה מההיסטוריה? הסטטיסטיקות יעודכנו בהתאם.",
     "workoutDeleted": "האימון נמחק",

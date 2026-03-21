@@ -121,6 +121,8 @@
     "workoutLog": "Workout Log",
     "addWorkout": "Add Workout",
     "workoutAdded": "Workout added to history",
+    "editWorkout": "Edit Workout",
+    "workoutUpdated": "Workout updated",
     "deleteWorkout": "Delete Workout",
     "confirmDeleteWorkout": "Delete this workout from history? This will update your statistics.",
     "workoutDeleted": "Workout deleted",

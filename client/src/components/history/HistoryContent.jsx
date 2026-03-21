@@ -158,6 +158,7 @@ function ProgressTab({ logs, t, isHe }) {
 function WorkoutLogTab({ logs, t, isHe, clientId }) {
   const [expandedId, setExpandedId] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingLog, setEditingLog] = useState(null);
   const queryClient = useQueryClient();
   const locale = isHe ? 'he-IL' : 'en-US';
 
@@ -194,6 +195,21 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
             queryClient.invalidateQueries({ queryKey: ['history', clientId] });
             setShowAdd(false);
             toast.success(t('history.workoutAdded'));
+          }}
+        />
+      )}
+
+      {editingLog && (
+        <AddManualWorkout
+          clientId={clientId}
+          t={t}
+          isHe={isHe}
+          existingLog={editingLog}
+          onClose={() => setEditingLog(null)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['history', clientId] });
+            setEditingLog(null);
+            toast.success(t('history.workoutUpdated'));
           }}
         />
       )}
@@ -255,9 +271,12 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
             {isOpen && (
               <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                 {log.exercises.map((ex, i) => {
-                  const info = ex.exerciseId;
-                  const exName = info ? (isHe && info.nameHe ? info.nameHe : info.name) : `${t('trainer.exercises')} ${i + 1}`;
-                  const exNameSub = info && isHe && info.nameHe ? info.name : null;
+                  const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
+                  const name = info?.name || ex.name;
+                  const nameHe = info?.nameHe || ex.nameHe;
+                  const mg = info?.muscleGroup || ex.muscleGroup;
+                  const exName = name ? (isHe && nameHe ? nameHe : name) : `${t('trainer.exercises')} ${i + 1}`;
+                  const exNameSub = isHe && nameHe && name ? name : null;
                   const sets = ex.sets.filter(s => s.isCompleted);
                   if (sets.length === 0) return null;
 
@@ -268,9 +287,9 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
                           <span className="text-sm font-bold text-gray-700">{exName}</span>
                           {exNameSub && <span className="block text-[10px] text-gray-400">{exNameSub}</span>}
                         </div>
-                        {info?.muscleGroup && (
+                        {mg && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-500">
-                            {t('muscle.' + info.muscleGroup)}
+                            {t('muscle.' + mg)}
                           </span>
                         )}
                       </div>
@@ -285,21 +304,34 @@ function WorkoutLogTab({ logs, t, isHe, clientId }) {
                   );
                 })}
 
-                {/* Delete button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm(t('history.confirmDeleteWorkout'))) {
-                      deleteMut.mutate(log._id);
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingLog(log);
                       setExpandedId(null);
-                    }
-                  }}
-                  disabled={deleteMut.isPending}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-red-500 hover:bg-red-50 text-xs font-bold transition-colors disabled:opacity-50"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  {t('history.deleteWorkout')}
-                </button>
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-accent hover:bg-accent/5 text-xs font-bold transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(t('history.confirmDeleteWorkout'))) {
+                        deleteMut.mutate(log._id);
+                        setExpandedId(null);
+                      }
+                    }}
+                    disabled={deleteMut.isPending}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-red-500 hover:bg-red-50 text-xs font-bold transition-colors disabled:opacity-50"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    {t('history.deleteWorkout')}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -385,9 +417,24 @@ function ExerciseCharts({ logs, exerciseId }) {
 }
 
 // ── Add Manual Workout ───────────────────────────────────
-function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [exercises, setExercises] = useState([]);
+function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }) {
+  const [date, setDate] = useState(
+    existingLog ? new Date(existingLog.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+  );
+  const [exercises, setExercises] = useState(() => {
+    if (!existingLog) return [];
+    return existingLog.exercises.map((ex, i) => {
+      const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
+      return {
+        id: Date.now() + i,
+        exerciseId: info?._id || ex.exerciseId,
+        name: info?.name || ex.name || '',
+        nameHe: info?.nameHe || ex.nameHe || '',
+        muscleGroup: info?.muscleGroup || ex.muscleGroup || '',
+        sets: ex.sets.map(s => ({ ...s, isCompleted: true })),
+      };
+    });
+  });
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
@@ -402,7 +449,8 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
       id: Date.now(),
       exerciseId: template._id,
       name: template.name,
-      nameHe: template.nameHe,
+      nameHe: template.nameHe || '',
+      muscleGroup: template.muscleGroup || '',
       sets: [{ setNumber: 1, weight: 0, reps: 8, rir: 2, isCompleted: true }],
     }]);
     setShowSearch(false);
@@ -435,15 +483,18 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
     if (exercises.length === 0) return;
     setSaving(true);
     try {
-      const log = await createWorkoutLog({
-        clientId,
-        date,
-        isCompleted: true,
-        exercises: exercises.map(ex => ({
-          exerciseId: ex.exerciseId,
-          sets: ex.sets,
-        })),
-      });
+      const exercisesData = exercises.map(ex => ({
+        exerciseId: ex.exerciseId,
+        name: ex.name,
+        nameHe: ex.nameHe || '',
+        muscleGroup: ex.muscleGroup || '',
+        sets: ex.sets,
+      }));
+      if (existingLog) {
+        await updateWorkoutLog(existingLog._id, { date, exercises: exercisesData });
+      } else {
+        await createWorkoutLog({ clientId, date, isCompleted: true, exercises: exercisesData });
+      }
       onSuccess();
     } catch (err) {
       toast.error(t('admin.actionFailed'));
@@ -463,7 +514,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
       <div className="bg-white rounded-t-3xl w-full max-w-lg mx-auto flex flex-col" style={{ height: '80vh' }} onClick={e => e.stopPropagation()}>
         <div className="shrink-0 px-6 pt-6 pb-3 border-b border-gray-100">
           <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4" />
-          <h3 className="text-xl font-black">{t('history.addWorkout')}</h3>
+          <h3 className="text-xl font-black">{existingLog ? t('history.editWorkout') : t('history.addWorkout')}</h3>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
@@ -493,21 +544,33 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
 
               {/* Sets */}
               <div className="px-3 py-2">
-                <div className="grid grid-cols-[32px_1fr_1fr_1fr] gap-1 text-[10px] font-bold text-gray-400 uppercase px-1 mb-1">
-                  <span>#</span>
+                <div className="grid grid-cols-[28px_1fr_1fr_1fr_28px] gap-1.5 text-[10px] font-bold text-gray-400 uppercase mb-1 px-0.5">
+                  <span className="text-center">#</span>
                   <span className="text-center">KG</span>
                   <span className="text-center">{t('client.reps')}</span>
                   <span className="text-center">RIR</span>
+                  <span></span>
                 </div>
                 {ex.sets.map((set, setIndex) => (
-                  <div key={setIndex} className="grid grid-cols-[32px_1fr_1fr_1fr] gap-1 items-center mb-1">
+                  <div key={setIndex} className="grid grid-cols-[28px_1fr_1fr_1fr_28px] gap-1.5 items-center mb-1.5">
                     <span className="text-xs font-bold text-gray-400 text-center">{set.setNumber}</span>
                     <input type="number" value={set.weight} onChange={e => updateSet(exIndex, setIndex, 'weight', e.target.value)}
-                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                      className="w-full text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
                     <input type="number" value={set.reps} onChange={e => updateSet(exIndex, setIndex, 'reps', e.target.value)}
-                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                      className="w-full text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
                     <input type="number" value={set.rir} onChange={e => updateSet(exIndex, setIndex, 'rir', e.target.value)}
-                      className="text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                      className="w-full text-center py-1.5 text-sm font-bold bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-accent/20" />
+                    <button
+                      onClick={() => {
+                        setExercises(prev => prev.map((e, i) => i === exIndex ? {
+                          ...e,
+                          sets: e.sets.filter((_, j) => j !== setIndex).map((s, j) => ({ ...s, setNumber: j + 1 })),
+                        } : e));
+                      }}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    </button>
                   </div>
                 ))}
                 <button
@@ -534,7 +597,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess }) {
                   className="w-full ps-9 pe-4 py-3 text-sm outline-none border-b border-gray-100"
                 />
               </div>
-              <div className="max-h-48 overflow-y-auto">
+              <div className="max-h-64 overflow-y-auto">
                 {filteredTemplates.map(tp => (
                   <button
                     key={tp._id}

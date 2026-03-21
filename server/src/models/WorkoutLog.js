@@ -11,6 +11,7 @@ const workoutLogSchema = new mongoose.Schema(
     exercises: [
       {
         exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
+        templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'ExerciseTemplate' },
         name: String,
         nameHe: String,
         muscleGroup: String,

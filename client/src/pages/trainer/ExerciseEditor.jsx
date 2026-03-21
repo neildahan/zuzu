@@ -217,6 +217,7 @@ export default function ExerciseEditor() {
     const data = {
       name,
       nameHe: template.nameHe || '',
+      templateId: template._id,
       muscleGroup: template.muscleGroup || '',
       videoUrl: template.videoUrl || '',
       notes: template.notes || '',

@@ -348,15 +348,17 @@ function ExerciseCharts({ logs, exerciseId }) {
   const volumeData = computeVolumeProgression(logs, exerciseId, i18n.language);
   const bestSet = computeBestSet(logs, exerciseId);
 
+  // Import getExerciseKey is not available here, inline the logic
+  const getKey = (e) => {
+    const info = e.exerciseId && typeof e.exerciseId === 'object' ? e.exerciseId : null;
+    if (e.templateId) return e.templateId.toString();
+    if (info?.templateId) return info.templateId.toString();
+    return (info?.name || e.name || '').toLowerCase().trim();
+  };
+
   const sessions = [];
   for (const log of logs) {
-    const ex = log.exercises.find((e) => {
-      const info = e.exerciseId && typeof e.exerciseId === 'object' ? e.exerciseId : null;
-      const name = (info?.name || e.name || '').toLowerCase().trim();
-      const nameHe = (info?.nameHe || e.nameHe || '').toLowerCase().trim();
-      const key = exerciseId.toLowerCase().trim();
-      return name === key || nameHe === key;
-    });
+    const ex = log.exercises.find((e) => getKey(e) === exerciseId);
     if (!ex) continue;
     const completedSets = ex.sets.filter(s => s.isCompleted);
     if (completedSets.length === 0) continue;
@@ -452,6 +454,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
     setExercises(prev => [...prev, {
       id: Date.now(),
       exerciseId: template._id,
+      templateId: template._id,
       name: template.name,
       nameHe: template.nameHe || '',
       muscleGroup: template.muscleGroup || '',
@@ -489,6 +492,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
     try {
       const exercisesData = exercises.map(ex => ({
         exerciseId: ex.exerciseId,
+        templateId: ex.templateId || ex.exerciseId,
         name: ex.name,
         nameHe: ex.nameHe || '',
         muscleGroup: ex.muscleGroup || '',

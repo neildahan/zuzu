@@ -112,7 +112,17 @@ export default function WorkoutSession() {
         id = newLog._id;
         setLogId(id);
       }
-      const exercisesData = Object.entries(logs).map(([exerciseId, sets]) => ({ exerciseId, sets }));
+      const exercisesData = Object.entries(logs).map(([exerciseId, sets]) => {
+        const ex = sortedExercises.find(e => e._id === exerciseId);
+        return {
+          exerciseId,
+          templateId: ex?.templateId || undefined,
+          name: ex?.name || '',
+          nameHe: ex?.nameHe || '',
+          muscleGroup: ex?.muscleGroup || '',
+          sets,
+        };
+      });
       await updateWorkoutLog(id, { exercises: exercisesData });
     } catch (err) {
       console.error('Auto-save failed:', err);
@@ -189,7 +199,17 @@ export default function WorkoutSession() {
         });
         id = newLog._id;
       }
-      const exercisesData = Object.entries(exerciseLogs).map(([exerciseId, sets]) => ({ exerciseId, sets }));
+      const exercisesData = Object.entries(exerciseLogs).map(([exerciseId, sets]) => {
+        const ex = sortedExercises.find(e => e._id === exerciseId);
+        return {
+          exerciseId,
+          templateId: ex?.templateId || undefined,
+          name: ex?.name || '',
+          nameHe: ex?.nameHe || '',
+          muscleGroup: ex?.muscleGroup || '',
+          sets,
+        };
+      });
       await updateWorkoutLog(id, { exercises: exercisesData, isCompleted: true });
       queryClient.invalidateQueries({ queryKey: ['workout-logs'] });
       queryClient.invalidateQueries({ queryKey: ['history'] });

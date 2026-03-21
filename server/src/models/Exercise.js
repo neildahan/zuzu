@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const exerciseSchema = new mongoose.Schema(
   {
     workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout', required: true },
+    templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'ExerciseTemplate' },
     name: { type: String, required: true },
     nameHe: String,
     muscleGroup: String,

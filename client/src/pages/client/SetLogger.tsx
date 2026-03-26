@@ -92,8 +92,8 @@ export default function SetLogger() {
   const exercise = useMemo(() => exercises?.find(e => e._id === eid), [exercises, eid]);
 
   const { data: previous } = useQuery({
-    queryKey: ['previous-log', user?._id, eid],
-    queryFn: () => getPreviousLog({ clientId: user._id, exerciseId: eid }),
+    queryKey: ['previous-log', user?._id, eid, exercise?.templateId],
+    queryFn: () => getPreviousLog({ clientId: user._id, exerciseId: eid, templateId: exercise?.templateId }),
     enabled: !!user && !!eid,
   });
 
@@ -214,7 +214,7 @@ export default function SetLogger() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-extrabold">{i18n.language === 'he' && exercise.nameHe ? exercise.nameHe : exercise.name}</h2>
-            {i18n.language === 'he' && exercise.nameHe && <p className="text-sm text-gray-400 font-medium mt-0.5">{exercise.name}</p>}
+            {i18n.language === 'he' && exercise.nameHe && exercise.name !== exercise.nameHe && /^[a-zA-Z]/.test(exercise.name) && <p className="text-sm text-gray-400 font-medium mt-0.5">{exercise.name}</p>}
           </div>
           {exercise.videoUrl && (
             <a

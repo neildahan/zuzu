@@ -142,7 +142,7 @@ function ProgressTab({ logs, t, isHe }) {
                   >
                     <div>
                       <span className="font-semibold text-gray-900">{name}</span>
-                      {isHe && ex.nameHe && <span className="block text-[11px] text-gray-400">{ex.name}</span>}
+                      {isHe && ex.nameHe && ex.name !== ex.nameHe && /^[a-zA-Z]/.test(ex.name) && <span className="block text-[11px] text-gray-400">{ex.name}</span>}
                     </div>
                     <ChevronDown size={16} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -594,7 +594,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
                 <div className="min-w-0">
                   <span className="font-bold text-sm text-gray-900">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
-                  {isHe && ex.nameHe && <span className="block text-[10px] text-gray-400">{ex.name}</span>}
+                  {isHe && ex.nameHe && ex.name !== ex.nameHe && /^[a-zA-Z]/.test(ex.name) && <span className="block text-[10px] text-gray-400">{ex.name}</span>}
                 </div>
                 <button onClick={() => removeExercise(exIndex)} className="text-red-400 hover:text-red-500">
                   <Trash2 size={16} />
@@ -666,7 +666,7 @@ function AddManualWorkout({ clientId, t, isHe, onClose, onSuccess, existingLog }
                   >
                     <div>
                       <span className="font-semibold text-gray-900">{isHe && tp.nameHe ? tp.nameHe : tp.name}</span>
-                      {isHe && tp.nameHe && <span className="block text-[10px] text-gray-400">{tp.name}</span>}
+                      {isHe && tp.nameHe && tp.name !== tp.nameHe && /^[a-zA-Z]/.test(tp.name) && <span className="block text-[10px] text-gray-400">{tp.name}</span>}
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
                       {tp.muscleGroup && t('muscle.' + tp.muscleGroup)}

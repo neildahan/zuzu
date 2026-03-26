@@ -690,7 +690,7 @@ function SortableExerciseCard({ ex, index, t, isHe, onEdit, onDelete }) {
           </div>
           <div className="flex-1 min-w-0">
             <span className="font-bold text-gray-900 block truncate">{isHe && ex.nameHe ? ex.nameHe : ex.name}</span>
-            {isHe && ex.nameHe && <span className="text-[11px] text-gray-400 font-medium block truncate">{ex.name}</span>}
+            {isHe && ex.nameHe && ex.name !== ex.nameHe && /^[a-zA-Z]/.test(ex.name) && <span className="text-[11px] text-gray-400 font-medium block truncate">{ex.name}</span>}
           </div>
         </div>
 

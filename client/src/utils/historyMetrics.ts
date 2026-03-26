@@ -7,11 +7,14 @@
  */
 function getExerciseKey(ex) {
   const info = ex.exerciseId && typeof ex.exerciseId === 'object' ? ex.exerciseId : null;
-  // Prefer templateId as stable key
-  if (ex.templateId) return ex.templateId.toString();
-  if (info?.templateId) return info.templateId.toString();
-  // Fallback to name
-  return (info?.name || ex.name || '').toLowerCase().trim();
+  // Prefer templateId as stable key (works across workouts)
+  if (ex.templateId) return `t:${ex.templateId.toString()}`;
+  if (info?.templateId) return `t:${info.templateId.toString()}`;
+  // Fallback to lowercase English name, then Hebrew name
+  const name = (info?.name || ex.name || '').toLowerCase().trim();
+  if (name) return `n:${name}`;
+  const nameHe = (info?.nameHe || ex.nameHe || '').trim();
+  return `n:${nameHe}`;
 }
 
 function matchExercise(ex, exerciseKey) {
@@ -113,18 +116,20 @@ export function extractExercises(logs) {
       const mg = info?.muscleGroup || ex.muscleGroup || '';
       if (!name && !nameHe) continue;
 
+      const hasCompletedSets = ex.sets?.some(s => s.isCompleted && s.weight > 0);
       const key = getExerciseKey(ex);
       if (!map.has(key)) {
-        map.set(key, { _id: key, name: name || nameHe, nameHe, muscleGroup: mg });
+        map.set(key, { _id: key, name: name || nameHe, nameHe, muscleGroup: mg, hasData: hasCompletedSets });
       } else {
         const existing = map.get(key);
         if (name && /^[a-zA-Z]/.test(name) && !/^[a-zA-Z]/.test(existing.name)) existing.name = name;
         if (nameHe && !existing.nameHe) existing.nameHe = nameHe;
         if (mg && !existing.muscleGroup) existing.muscleGroup = mg;
+        if (hasCompletedSets) existing.hasData = true;
       }
     }
   }
-  const exercises = Array.from(map.values());
+  const exercises = Array.from(map.values()).filter(ex => ex.hasData);
   const grouped = {};
   for (const ex of exercises) {
     const g = ex.muscleGroup || 'Other';

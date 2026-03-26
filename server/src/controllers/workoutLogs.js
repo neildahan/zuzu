@@ -25,19 +25,32 @@ exports.list = async (req, res) => {
 
 exports.previous = async (req, res) => {
   try {
-    const { clientId, exerciseId } = req.query;
+    const { clientId, exerciseId, templateId } = req.query;
     if (!clientId || !exerciseId) {
       return res.status(400).json({ error: 'clientId and exerciseId are required' });
     }
-    const log = await WorkoutLog.findOne({
-      clientId,
-      'exercises.exerciseId': exerciseId,
-    }).sort({ date: -1 });
+
+    // Try matching by templateId first (stable across workouts), fall back to exerciseId
+    let log;
+    if (templateId) {
+      log = await WorkoutLog.findOne({
+        clientId,
+        'exercises.templateId': templateId,
+      }).sort({ date: -1 });
+    }
+    if (!log) {
+      log = await WorkoutLog.findOne({
+        clientId,
+        'exercises.exerciseId': exerciseId,
+      }).sort({ date: -1 });
+    }
 
     if (!log) return res.json(null);
 
     const exerciseData = log.exercises.find(
-      (e) => e.exerciseId.toString() === exerciseId
+      (e) =>
+        (templateId && e.templateId?.toString() === templateId) ||
+        e.exerciseId?.toString() === exerciseId
     );
     res.json(exerciseData || null);
   } catch (err) {
@@ -59,7 +72,7 @@ exports.history = async (req, res) => {
       .sort({ date: 1 })
       .populate({
         path: 'exercises.exerciseId',
-        select: 'name nameHe muscleGroup',
+        select: 'name nameHe muscleGroup templateId',
       })
       .populate('workoutId', 'name type');
     res.json(logs);

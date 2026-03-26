@@ -49,7 +49,7 @@ export default function WorkoutSummarySheet({ exercises, exerciseLogs, elapsed, 
                   <Dumbbell size={14} className="text-gray-400 shrink-0" />
                   <div className="min-w-0">
                     <span className="text-sm font-semibold truncate block">{exName}</span>
-                    {isHe && ex.nameHe && <span className="text-[10px] text-gray-400 block">{ex.name}</span>}
+                    {isHe && ex.nameHe && ex.name !== ex.nameHe && /^[a-zA-Z]/.test(ex.name) && <span className="text-[10px] text-gray-400 block">{ex.name}</span>}
                   </div>
                 </div>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${

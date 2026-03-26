@@ -129,7 +129,7 @@ export default function WorkoutDetail() {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
                       <span className="font-bold text-gray-900 truncate block">{i18n.language === 'he' && ex.nameHe ? ex.nameHe : ex.name}</span>
-                      {i18n.language === 'he' && ex.nameHe && <span className="text-[11px] text-gray-400 font-medium truncate block">{ex.name}</span>}
+                      {i18n.language === 'he' && ex.nameHe && ex.name !== ex.nameHe && /^[a-zA-Z]/.test(ex.name) && <span className="text-[11px] text-gray-400 font-medium truncate block">{ex.name}</span>}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">

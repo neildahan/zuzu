@@ -327,7 +327,7 @@ export default function WorkoutSession() {
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-extrabold">{isHe && activeExercise.nameHe ? activeExercise.nameHe : activeExercise.name}</h2>
-                  {isHe && activeExercise.nameHe && <p className="text-xs text-gray-400 mt-0.5">{activeExercise.name}</p>}
+                  {isHe && activeExercise.nameHe && activeExercise.name !== activeExercise.nameHe && /^[a-zA-Z]/.test(activeExercise.name) && <p className="text-xs text-gray-400 mt-0.5">{activeExercise.name}</p>}
                 </div>
                 {activeExercise.videoUrl && (
                   <a href={activeExercise.videoUrl} target="_blank" rel="noopener noreferrer"
